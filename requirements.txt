@@ -1,0 +1,6 @@
+pandas>=2.0
+pyarrow>=14.0
+requests>=2.31
+ccxt>=4.0
+python-dateutil>=2.8
+anthropic>=0.40

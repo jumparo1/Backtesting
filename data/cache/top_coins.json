@@ -1,0 +1,602 @@
+[
+  {
+    "id": "bitcoin",
+    "symbol": "BTC",
+    "name": "Bitcoin",
+    "market_cap_rank": 1
+  },
+  {
+    "id": "ethereum",
+    "symbol": "ETH",
+    "name": "Ethereum",
+    "market_cap_rank": 2
+  },
+  {
+    "id": "ripple",
+    "symbol": "XRP",
+    "name": "XRP",
+    "market_cap_rank": 3
+  },
+  {
+    "id": "binancecoin",
+    "symbol": "BNB",
+    "name": "BNB",
+    "market_cap_rank": 4
+  },
+  {
+    "id": "solana",
+    "symbol": "SOL",
+    "name": "Solana",
+    "market_cap_rank": 5
+  },
+  {
+    "id": "dogecoin",
+    "symbol": "DOGE",
+    "name": "Dogecoin",
+    "market_cap_rank": 6
+  },
+  {
+    "id": "cardano",
+    "symbol": "ADA",
+    "name": "Cardano",
+    "market_cap_rank": 7
+  },
+  {
+    "id": "tron",
+    "symbol": "TRX",
+    "name": "TRON",
+    "market_cap_rank": 8
+  },
+  {
+    "id": "the-open-network",
+    "symbol": "TON",
+    "name": "Toncoin",
+    "market_cap_rank": 9
+  },
+  {
+    "id": "chainlink",
+    "symbol": "LINK",
+    "name": "Chainlink",
+    "market_cap_rank": 10
+  },
+  {
+    "id": "avalanche-2",
+    "symbol": "AVAX",
+    "name": "Avalanche",
+    "market_cap_rank": 11
+  },
+  {
+    "id": "sui",
+    "symbol": "SUI",
+    "name": "Sui",
+    "market_cap_rank": 12
+  },
+  {
+    "id": "stellar",
+    "symbol": "XLM",
+    "name": "Stellar",
+    "market_cap_rank": 13
+  },
+  {
+    "id": "shiba-inu",
+    "symbol": "SHIB",
+    "name": "Shiba Inu",
+    "market_cap_rank": 14
+  },
+  {
+    "id": "hedera-hashgraph",
+    "symbol": "HBAR",
+    "name": "Hedera",
+    "market_cap_rank": 15
+  },
+  {
+    "id": "polkadot",
+    "symbol": "DOT",
+    "name": "Polkadot",
+    "market_cap_rank": 16
+  },
+  {
+    "id": "bitcoin-cash",
+    "symbol": "BCH",
+    "name": "Bitcoin Cash",
+    "market_cap_rank": 17
+  },
+  {
+    "id": "hyperliquid",
+    "symbol": "HYPE",
+    "name": "Hyperliquid",
+    "market_cap_rank": 18
+  },
+  {
+    "id": "litecoin",
+    "symbol": "LTC",
+    "name": "Litecoin",
+    "market_cap_rank": 19
+  },
+  {
+    "id": "uniswap",
+    "symbol": "UNI",
+    "name": "Uniswap",
+    "market_cap_rank": 20
+  },
+  {
+    "id": "leo-token",
+    "symbol": "LEO",
+    "name": "LEO Token",
+    "market_cap_rank": 21
+  },
+  {
+    "id": "near",
+    "symbol": "NEAR",
+    "name": "NEAR Protocol",
+    "market_cap_rank": 22
+  },
+  {
+    "id": "aptos",
+    "symbol": "APT",
+    "name": "Aptos",
+    "market_cap_rank": 23
+  },
+  {
+    "id": "internet-computer",
+    "symbol": "ICP",
+    "name": "Internet Computer",
+    "market_cap_rank": 24
+  },
+  {
+    "id": "aave",
+    "symbol": "AAVE",
+    "name": "Aave",
+    "market_cap_rank": 25
+  },
+  {
+    "id": "pepe",
+    "symbol": "PEPE",
+    "name": "Pepe",
+    "market_cap_rank": 26
+  },
+  {
+    "id": "ethereum-classic",
+    "symbol": "ETC",
+    "name": "Ethereum Classic",
+    "market_cap_rank": 27
+  },
+  {
+    "id": "render-token",
+    "symbol": "RENDER",
+    "name": "Render",
+    "market_cap_rank": 28
+  },
+  {
+    "id": "monero",
+    "symbol": "XMR",
+    "name": "Monero",
+    "market_cap_rank": 29
+  },
+  {
+    "id": "cosmos",
+    "symbol": "ATOM",
+    "name": "Cosmos",
+    "market_cap_rank": 30
+  },
+  {
+    "id": "mantle",
+    "symbol": "MNT",
+    "name": "Mantle",
+    "market_cap_rank": 31
+  },
+  {
+    "id": "crypto-com-chain",
+    "symbol": "CRO",
+    "name": "Cronos",
+    "market_cap_rank": 32
+  },
+  {
+    "id": "vechain",
+    "symbol": "VET",
+    "name": "VeChain",
+    "market_cap_rank": 33
+  },
+  {
+    "id": "filecoin",
+    "symbol": "FIL",
+    "name": "Filecoin",
+    "market_cap_rank": 34
+  },
+  {
+    "id": "arbitrum",
+    "symbol": "ARB",
+    "name": "Arbitrum",
+    "market_cap_rank": 35
+  },
+  {
+    "id": "kaspa",
+    "symbol": "KAS",
+    "name": "Kaspa",
+    "market_cap_rank": 36
+  },
+  {
+    "id": "okb",
+    "symbol": "OKB",
+    "name": "OKB",
+    "market_cap_rank": 37
+  },
+  {
+    "id": "celestia",
+    "symbol": "TIA",
+    "name": "Celestia",
+    "market_cap_rank": 38
+  },
+  {
+    "id": "fantom",
+    "symbol": "FTM",
+    "name": "Fantom",
+    "market_cap_rank": 39
+  },
+  {
+    "id": "algorand",
+    "symbol": "ALGO",
+    "name": "Algorand",
+    "market_cap_rank": 40
+  },
+  {
+    "id": "bonk",
+    "symbol": "BONK",
+    "name": "Bonk",
+    "market_cap_rank": 41
+  },
+  {
+    "id": "optimism",
+    "symbol": "OP",
+    "name": "Optimism",
+    "market_cap_rank": 42
+  },
+  {
+    "id": "injective-protocol",
+    "symbol": "INJ",
+    "name": "Injective",
+    "market_cap_rank": 43
+  },
+  {
+    "id": "stacks",
+    "symbol": "STX",
+    "name": "Stacks",
+    "market_cap_rank": 44
+  },
+  {
+    "id": "immutable-x",
+    "symbol": "IMX",
+    "name": "Immutable",
+    "market_cap_rank": 45
+  },
+  {
+    "id": "theta-token",
+    "symbol": "THETA",
+    "name": "Theta Network",
+    "market_cap_rank": 46
+  },
+  {
+    "id": "sei-network",
+    "symbol": "SEI",
+    "name": "Sei",
+    "market_cap_rank": 47
+  },
+  {
+    "id": "the-graph",
+    "symbol": "GRT",
+    "name": "The Graph",
+    "market_cap_rank": 48
+  },
+  {
+    "id": "floki",
+    "symbol": "FLOKI",
+    "name": "FLOKI",
+    "market_cap_rank": 49
+  },
+  {
+    "id": "maker",
+    "symbol": "MKR",
+    "name": "Maker",
+    "market_cap_rank": 50
+  },
+  {
+    "id": "matic-network",
+    "symbol": "POL",
+    "name": "Polygon",
+    "market_cap_rank": 51
+  },
+  {
+    "id": "pyth-network",
+    "symbol": "PYTH",
+    "name": "Pyth Network",
+    "market_cap_rank": 52
+  },
+  {
+    "id": "worldcoin-wld",
+    "symbol": "WLD",
+    "name": "Worldcoin",
+    "market_cap_rank": 53
+  },
+  {
+    "id": "jupiter-exchange-solana",
+    "symbol": "JUP",
+    "name": "Jupiter",
+    "market_cap_rank": 54
+  },
+  {
+    "id": "gala",
+    "symbol": "GALA",
+    "name": "Gala",
+    "market_cap_rank": 55
+  },
+  {
+    "id": "lido-dao",
+    "symbol": "LDO",
+    "name": "Lido DAO",
+    "market_cap_rank": 56
+  },
+  {
+    "id": "flow",
+    "symbol": "FLOW",
+    "name": "Flow",
+    "market_cap_rank": 57
+  },
+  {
+    "id": "the-sandbox",
+    "symbol": "SAND",
+    "name": "The Sandbox",
+    "market_cap_rank": 58
+  },
+  {
+    "id": "axie-infinity",
+    "symbol": "AXS",
+    "name": "Axie Infinity",
+    "market_cap_rank": 59
+  },
+  {
+    "id": "decentraland",
+    "symbol": "MANA",
+    "name": "Decentraland",
+    "market_cap_rank": 60
+  },
+  {
+    "id": "tezos",
+    "symbol": "XTZ",
+    "name": "Tezos",
+    "market_cap_rank": 61
+  },
+  {
+    "id": "eos",
+    "symbol": "EOS",
+    "name": "EOS",
+    "market_cap_rank": 62
+  },
+  {
+    "id": "kucoin-shares",
+    "symbol": "KCS",
+    "name": "KuCoin Token",
+    "market_cap_rank": 63
+  },
+  {
+    "id": "bittensor",
+    "symbol": "TAO",
+    "name": "Bittensor",
+    "market_cap_rank": 64
+  },
+  {
+    "id": "raydium",
+    "symbol": "RAY",
+    "name": "Raydium",
+    "market_cap_rank": 65
+  },
+  {
+    "id": "ondo-finance",
+    "symbol": "ONDO",
+    "name": "Ondo",
+    "market_cap_rank": 66
+  },
+  {
+    "id": "quant-network",
+    "symbol": "QNT",
+    "name": "Quant",
+    "market_cap_rank": 67
+  },
+  {
+    "id": "neo",
+    "symbol": "NEO",
+    "name": "Neo",
+    "market_cap_rank": 68
+  },
+  {
+    "id": "iota",
+    "symbol": "IOTA",
+    "name": "IOTA",
+    "market_cap_rank": 69
+  },
+  {
+    "id": "arweave",
+    "symbol": "AR",
+    "name": "Arweave",
+    "market_cap_rank": 70
+  },
+  {
+    "id": "chiliz",
+    "symbol": "CHZ",
+    "name": "Chiliz",
+    "market_cap_rank": 71
+  },
+  {
+    "id": "enjincoin",
+    "symbol": "ENJ",
+    "name": "Enjin Coin",
+    "market_cap_rank": 72
+  },
+  {
+    "id": "dydx",
+    "symbol": "DYDX",
+    "name": "dYdX",
+    "market_cap_rank": 73
+  },
+  {
+    "id": "pendle",
+    "symbol": "PENDLE",
+    "name": "Pendle",
+    "market_cap_rank": 74
+  },
+  {
+    "id": "woo-network",
+    "symbol": "WOO",
+    "name": "WOO",
+    "market_cap_rank": 75
+  },
+  {
+    "id": "curve-dao-token",
+    "symbol": "CRV",
+    "name": "Curve DAO",
+    "market_cap_rank": 76
+  },
+  {
+    "id": "1inch",
+    "symbol": "1INCH",
+    "name": "1inch",
+    "market_cap_rank": 77
+  },
+  {
+    "id": "kava",
+    "symbol": "KAVA",
+    "name": "Kava",
+    "market_cap_rank": 78
+  },
+  {
+    "id": "mina-protocol",
+    "symbol": "MINA",
+    "name": "Mina",
+    "market_cap_rank": 79
+  },
+  {
+    "id": "zilliqa",
+    "symbol": "ZIL",
+    "name": "Zilliqa",
+    "market_cap_rank": 80
+  },
+  {
+    "id": "celo",
+    "symbol": "CELO",
+    "name": "Celo",
+    "market_cap_rank": 81
+  },
+  {
+    "id": "pancakeswap-token",
+    "symbol": "CAKE",
+    "name": "PancakeSwap",
+    "market_cap_rank": 82
+  },
+  {
+    "id": "compound-governance-token",
+    "symbol": "COMP",
+    "name": "Compound",
+    "market_cap_rank": 83
+  },
+  {
+    "id": "synthetix-network-token",
+    "symbol": "SNX",
+    "name": "Synthetix",
+    "market_cap_rank": 84
+  },
+  {
+    "id": "fetch-ai",
+    "symbol": "FET",
+    "name": "Fetch.ai",
+    "market_cap_rank": 85
+  },
+  {
+    "id": "ocean-protocol",
+    "symbol": "OCEAN",
+    "name": "Ocean Protocol",
+    "market_cap_rank": 86
+  },
+  {
+    "id": "mask-network",
+    "symbol": "MASK",
+    "name": "Mask Network",
+    "market_cap_rank": 87
+  },
+  {
+    "id": "loopring",
+    "symbol": "LRC",
+    "name": "Loopring",
+    "market_cap_rank": 88
+  },
+  {
+    "id": "iotex",
+    "symbol": "IOTX",
+    "name": "IoTeX",
+    "market_cap_rank": 89
+  },
+  {
+    "id": "conflux-token",
+    "symbol": "CFX",
+    "name": "Conflux",
+    "market_cap_rank": 90
+  },
+  {
+    "id": "rocket-pool",
+    "symbol": "RPL",
+    "name": "Rocket Pool",
+    "market_cap_rank": 91
+  },
+  {
+    "id": "thorchain",
+    "symbol": "RUNE",
+    "name": "THORChain",
+    "market_cap_rank": 92
+  },
+  {
+    "id": "gmx",
+    "symbol": "GMX",
+    "name": "GMX",
+    "market_cap_rank": 93
+  },
+  {
+    "id": "blur",
+    "symbol": "BLUR",
+    "name": "Blur",
+    "market_cap_rank": 94
+  },
+  {
+    "id": "helium",
+    "symbol": "HNT",
+    "name": "Helium",
+    "market_cap_rank": 95
+  },
+  {
+    "id": "eigenlayer",
+    "symbol": "EIGEN",
+    "name": "EigenLayer",
+    "market_cap_rank": 96
+  },
+  {
+    "id": "ethena",
+    "symbol": "ENA",
+    "name": "Ethena",
+    "market_cap_rank": 97
+  },
+  {
+    "id": "jito-governance-token",
+    "symbol": "JTO",
+    "name": "Jito",
+    "market_cap_rank": 98
+  },
+  {
+    "id": "wormhole",
+    "symbol": "W",
+    "name": "Wormhole",
+    "market_cap_rank": 99
+  },
+  {
+    "id": "echelon-prime",
+    "symbol": "PRIME",
+    "name": "Echelon Prime",
+    "market_cap_rank": 100
+  }
+]
