@@ -9,20 +9,22 @@ Pattern (3 consecutive candles):
   C2 (Manipulation) — sweeps beyond C1's extreme to grab liquidity.
   C3 (Expansion)    — price reverses in the opposite direction of the sweep.
 
-LONG setup  (C2 sweeps C1 LOW):
-  • C2 low < C1 low  (sell-side liquidity grabbed)
-  • C2 closes back above C1 low  (rejection / spring)
+LONG setup  (Bullish CRT):
+  • C2 wick sweeps below C1 low  (sell-side liquidity grabbed)
+  • C2 body (open-close) inside C1 body  (inside candle)
+  • C2 closes green (close > open)  — bullish rejection
   • Enter long at C3 open
   • SL = C2 low (natural invalidation)
   • TP = entry + 2.5 × risk  (2.5R)
 
-SELL signal (C2 sweeps C1 HIGH — bearish CRT):
-  • C2 high > C1 high  (buy-side liquidity grabbed)
-  • C2 closes back below C1 high  (rejection / distribution)
+SELL signal (Bearish CRT):
+  • C2 wick sweeps above C1 high  (buy-side liquidity grabbed)
+  • C2 body inside C1 body
+  • C2 closes red (close < open)  — bearish rejection
   • Close any open long position
 
 Note: The engine is long-only. Bearish CRT patterns act as EXIT signals
-(close longs) rather than short entries.
+(close longs) rather than short entries. Based on ICT Power of 3 (AMD).
 """
 
 from __future__ import annotations
@@ -137,16 +139,27 @@ class CRTCISDStrategy(Strategy):
         return orders
 
     def _is_bullish_crt(self, c1: CandleSnapshot, c2: CandleSnapshot) -> bool:
-        """C2 sweeps below C1 low (sell-side liquidity grab) then recovers."""
-        # C2 must have traded below C1 low (sweep)
+        """Bullish CRT: C2 wick sweeps below C1 low, body inside C1, closes green."""
+        # C2 wick must have swept below C1 low (liquidity grab)
         if c2.low >= c1.low:
             return False
 
-        # C2 must close back above C1 low (rejection)
-        if self.require_close_inside and c2.close <= c1.low:
+        # C2 body (open-close) must be inside C1 body (open-close)
+        # This is the ICT "inside candle" rule — body inside body
+        c1_body_hi = max(c1.open, c1.close)
+        c1_body_lo = min(c1.open, c1.close)
+        c2_body_hi = max(c2.open, c2.close)
+        c2_body_lo = min(c2.open, c2.close)
+
+        if self.require_close_inside:
+            if c2_body_hi > c1_body_hi or c2_body_lo < c1_body_lo:
+                return False
+
+        # C2 must close green (close > open) — bullish rejection
+        if c2.close <= c2.open:
             return False
 
-        # Optional: minimum sweep depth
+        # Optional: minimum sweep depth as % of C1 range
         c1_range = c1.high - c1.low
         if c1_range > 0 and self.min_sweep_pct > 0:
             sweep_depth = c1.low - c2.low
@@ -156,13 +169,23 @@ class CRTCISDStrategy(Strategy):
         return True
 
     def _is_bearish_crt(self, c1: CandleSnapshot, c2: CandleSnapshot) -> bool:
-        """C2 sweeps above C1 high (buy-side liquidity grab) then rejects."""
-        # C2 must have traded above C1 high (sweep)
+        """Bearish CRT: C2 wick sweeps above C1 high, body inside C1, closes red."""
+        # C2 wick must have swept above C1 high (liquidity grab)
         if c2.high <= c1.high:
             return False
 
-        # C2 must close back below C1 high (rejection)
-        if self.require_close_inside and c2.close >= c1.high:
+        # C2 body must be inside C1 body
+        c1_body_hi = max(c1.open, c1.close)
+        c1_body_lo = min(c1.open, c1.close)
+        c2_body_hi = max(c2.open, c2.close)
+        c2_body_lo = min(c2.open, c2.close)
+
+        if self.require_close_inside:
+            if c2_body_hi > c1_body_hi or c2_body_lo < c1_body_lo:
+                return False
+
+        # C2 must close red (close < open) — bearish rejection
+        if c2.close >= c2.open:
             return False
 
         # Optional: minimum sweep depth
