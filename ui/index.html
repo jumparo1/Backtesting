@@ -1046,12 +1046,11 @@ let currentSymbol = null;
 const STRATEGY_TEMPLATES = {
   crt_cisd: {
     name: "CRT + CISD (Candle Range Theory + Change in State of Delivery)",
-    description: `CRT + CISD Strategy (SHORT bias):
-Identify 3-candle sequence: C1 (setup), C2 (manipulation/sweep), C3 (expansion).
-SHORT: When C2 sweeps above C1 high (liquidity grab), enter short on return below C1 high (CISD level).
-LONG: When C2 sweeps below C1 low (liquidity grab), enter long on return above C1 low (CISD level).
-Stop loss at C2 extreme (tight). Take profit at 2.5x risk (2.5R).
-Multi-timeframe: Use 1D CRT for direction, 1H CRT+CISD for entry confirmation.`
+    description: `CRT + CISD Strategy (LONG + SHORT):
+3-candle pattern: C1 (setup/range), C2 (manipulation/sweep), C3 (expansion/entry).
+LONG: C2 sweeps below C1 low (sell-side liquidity grab), body inside C1, closes green. Enter long at C3 open. SL at C2 low.
+SHORT: C2 sweeps above C1 high (buy-side liquidity grab), body inside C1, closes red. Enter short at C3 open. SL at C2 high.
+Take profit at 2.5x risk (2.5R). Opposite signal flips position.`
   }
 };
 
@@ -1618,20 +1617,23 @@ function renderTrades(trades, symbol) {
   document.getElementById('tradesTitle').textContent = `Trade Log \u2014 ${symbol}`;
 
   if (!trades || trades.length === 0) {
-    table.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-dim);padding:24px">No trades executed</td></tr>';
+    table.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--text-dim);padding:24px">No trades executed</td></tr>';
     return;
   }
 
   let html = `<thead><tr>
-    <th>#</th><th>Entry</th><th>Exit</th><th>Entry $</th><th>Exit $</th><th>P&amp;L</th><th>P&amp;L %</th><th>Result</th>
+    <th>#</th><th>Side</th><th>Entry</th><th>Exit</th><th>Entry $</th><th>Exit $</th><th>P&amp;L</th><th>P&amp;L %</th><th>Result</th>
   </tr></thead><tbody>`;
 
   const show = trades.slice(0, 30);
   show.forEach((t, i) => {
     const cls = t.pnl > 0 ? 'tag-win' : 'tag-loss';
     const tag = t.pnl > 0 ? 'WIN' : 'LOSS';
+    const side = t.side || 'LONG';
+    const sideCls = side === 'SHORT' ? 'color:var(--red)' : 'color:var(--green)';
     html += `<tr>
       <td>${i + 1}</td>
+      <td style="${sideCls};font-weight:600;font-size:0.8rem">${side}</td>
       <td>${t.entry_date || '\u2014'}</td>
       <td>${t.exit_date || '\u2014'}</td>
       <td>$${fmtPrice(t.entry_price)}</td>
@@ -1643,7 +1645,7 @@ function renderTrades(trades, symbol) {
   });
 
   if (trades.length > 30) {
-    html += `<tr><td colspan="8" style="text-align:center;color:var(--text-dim);padding:12px">
+    html += `<tr><td colspan="9" style="text-align:center;color:var(--text-dim);padding:12px">
       ...and ${trades.length - 30} more trades
     </td></tr>`;
   }

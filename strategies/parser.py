@@ -81,8 +81,8 @@ def _try_custom_strategy(text: str) -> ParseResult | None:
 
         warnings = [
             "Using CRT + CISD candle pattern strategy (not indicator-based).",
-            "LONG only: enters on bullish CRT (C2 sweeps C1 low), exits on bearish CRT.",
-            f"Target: {strategy.rr_target}R (risk-to-reward).",
+            "LONG + SHORT: enters long on bullish CRT, enters short on bearish CRT.",
+            f"Target: {strategy.rr_target}R (risk-to-reward). SL at C2 extreme.",
             "Note: Only daily candles available — multi-timeframe alignment not applied.",
         ]
 

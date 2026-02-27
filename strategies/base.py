@@ -71,8 +71,31 @@ class Strategy(ABC):
         )
 
     def sell(self, symbol: str) -> Order:
-        """Create a market SELL order (close entire position)."""
+        """Create a market SELL order (close entire long position)."""
         return Order(
             symbol=symbol,
             side=OrderSide.SELL,
+        )
+
+    def short(
+        self,
+        symbol: str,
+        size_pct: float = 1.0,
+        stop_loss_pct: float | None = None,
+        take_profit_pct: float | None = None,
+    ) -> Order:
+        """Create a market SHORT order (open short position)."""
+        return Order(
+            symbol=symbol,
+            side=OrderSide.SHORT,
+            size_pct=size_pct,
+            stop_loss_pct=stop_loss_pct,
+            take_profit_pct=take_profit_pct,
+        )
+
+    def cover(self, symbol: str) -> Order:
+        """Create a market COVER order (close entire short position)."""
+        return Order(
+            symbol=symbol,
+            side=OrderSide.COVER,
         )

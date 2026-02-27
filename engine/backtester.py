@@ -1,11 +1,12 @@
 """
 Core backtesting engine — candle-by-candle loop, no look-ahead bias.
+Supports both LONG and SHORT positions.
 
-Execution model (from FRAMEWORK.md):
+Execution model:
 1. Load data for selected coins and timeframe
 2. Initialize portfolio with starting balance
 3. Iterate candle-by-candle chronologically
-4. For each candle: push to indicators -> check stop/TP -> call on_candle() -> queue orders
+4. For each candle: execute pending orders -> check stop/TP -> push indicators -> call on_candle()
 5. Orders fill at the NEXT candle's open (no look-ahead)
 6. Apply slippage and fees on every fill
 7. Track all trades in a trade log
@@ -27,6 +28,8 @@ from engine.order import (
     OrderSide,
     execute_buy,
     execute_sell,
+    execute_short,
+    execute_cover,
 )
 from engine.portfolio import Portfolio
 from indicators.base import IndicatorEngine
@@ -124,7 +127,7 @@ def run_backtest(
 
             elif order.side == OrderSide.SELL:
                 pos = portfolio.get_position(order.symbol)
-                if pos:
+                if pos and pos.side == "LONG":
                     fill = execute_sell(
                         symbol=order.symbol,
                         quantity=pos.quantity,
@@ -135,6 +138,31 @@ def run_backtest(
                     fill.timestamp = ts
                     portfolio.apply_sell(fill)
 
+            elif order.side == OrderSide.SHORT:
+                fill = execute_short(
+                    order,
+                    fill_price=open_price,
+                    available_balance=portfolio.cash,
+                    fee_pct=config.fee_pct,
+                    slippage_pct=config.slippage_pct,
+                )
+                if fill:
+                    fill.timestamp = ts
+                    portfolio.apply_short(fill, order.stop_loss_pct, order.take_profit_pct)
+
+            elif order.side == OrderSide.COVER:
+                pos = portfolio.get_position(order.symbol)
+                if pos and pos.side == "SHORT":
+                    fill = execute_cover(
+                        symbol=order.symbol,
+                        quantity=pos.quantity,
+                        fill_price=open_price,
+                        fee_pct=config.fee_pct,
+                        slippage_pct=config.slippage_pct,
+                    )
+                    fill.timestamp = ts
+                    portfolio.apply_cover(fill)
+
         pending_orders.clear()
 
         # ----------------------------------------------------------
@@ -144,30 +172,58 @@ def run_backtest(
         pos = portfolio.get_position(symbol)
         if pos:
             triggered = False
-            # Stop-loss: triggered if low <= stop level
-            if pos.stop_loss and candle["low"] <= pos.stop_loss:
-                fill = execute_sell(
-                    symbol=symbol,
-                    quantity=pos.quantity,
-                    fill_price=pos.stop_loss,
-                    fee_pct=config.fee_pct,
-                    slippage_pct=config.slippage_pct,
-                )
-                fill.timestamp = ts
-                portfolio.apply_sell(fill)
-                triggered = True
 
-            # Take-profit: triggered if high >= TP level
-            if not triggered and pos.take_profit and candle["high"] >= pos.take_profit:
-                fill = execute_sell(
-                    symbol=symbol,
-                    quantity=pos.quantity,
-                    fill_price=pos.take_profit,
-                    fee_pct=config.fee_pct,
-                    slippage_pct=config.slippage_pct,
-                )
-                fill.timestamp = ts
-                portfolio.apply_sell(fill)
+            if pos.side == "LONG":
+                # Long SL: triggered if low <= stop level
+                if pos.stop_loss and candle["low"] <= pos.stop_loss:
+                    fill = execute_sell(
+                        symbol=symbol,
+                        quantity=pos.quantity,
+                        fill_price=pos.stop_loss,
+                        fee_pct=config.fee_pct,
+                        slippage_pct=config.slippage_pct,
+                    )
+                    fill.timestamp = ts
+                    portfolio.apply_sell(fill)
+                    triggered = True
+
+                # Long TP: triggered if high >= TP level
+                if not triggered and pos.take_profit and candle["high"] >= pos.take_profit:
+                    fill = execute_sell(
+                        symbol=symbol,
+                        quantity=pos.quantity,
+                        fill_price=pos.take_profit,
+                        fee_pct=config.fee_pct,
+                        slippage_pct=config.slippage_pct,
+                    )
+                    fill.timestamp = ts
+                    portfolio.apply_sell(fill)
+
+            elif pos.side == "SHORT":
+                # Short SL: triggered if high >= stop level (price went up)
+                if pos.stop_loss and candle["high"] >= pos.stop_loss:
+                    fill = execute_cover(
+                        symbol=symbol,
+                        quantity=pos.quantity,
+                        fill_price=pos.stop_loss,
+                        fee_pct=config.fee_pct,
+                        slippage_pct=config.slippage_pct,
+                    )
+                    fill.timestamp = ts
+                    portfolio.apply_cover(fill)
+                    triggered = True
+
+                # Short TP: triggered if low <= TP level (price went down)
+                if not triggered and pos.take_profit and candle["low"] <= pos.take_profit:
+                    fill = execute_cover(
+                        symbol=symbol,
+                        quantity=pos.quantity,
+                        fill_price=pos.take_profit,
+                        fee_pct=config.fee_pct,
+                        slippage_pct=config.slippage_pct,
+                    )
+                    fill.timestamp = ts
+                    portfolio.apply_cover(fill)
 
         # ----------------------------------------------------------
         # 3. Push candle to indicators (strategy sees up to now).
@@ -192,15 +248,26 @@ def run_backtest(
     pos = portfolio.get_position(symbol)
     if pos and rows:
         last = rows[-1]
-        fill = execute_sell(
-            symbol=symbol,
-            quantity=pos.quantity,
-            fill_price=last["close"],
-            fee_pct=config.fee_pct,
-            slippage_pct=config.slippage_pct,
-        )
-        fill.timestamp = last.get("timestamp")
-        portfolio.apply_sell(fill)
+        if pos.side == "LONG":
+            fill = execute_sell(
+                symbol=symbol,
+                quantity=pos.quantity,
+                fill_price=last["close"],
+                fee_pct=config.fee_pct,
+                slippage_pct=config.slippage_pct,
+            )
+            fill.timestamp = last.get("timestamp")
+            portfolio.apply_sell(fill)
+        elif pos.side == "SHORT":
+            fill = execute_cover(
+                symbol=symbol,
+                quantity=pos.quantity,
+                fill_price=last["close"],
+                fee_pct=config.fee_pct,
+                slippage_pct=config.slippage_pct,
+            )
+            fill.timestamp = last.get("timestamp")
+            portfolio.apply_cover(fill)
 
     return BacktestResult(
         portfolio=portfolio,

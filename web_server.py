@@ -245,6 +245,7 @@ class BacktestHandler(BaseHTTPRequestHandler):
             trades = []
             for t in bt_result.trades:
                 trades.append({
+                    "side": t.side,
                     "entry_date": _fmt_ts(t.entry_time),
                     "exit_date": _fmt_ts(t.exit_time),
                     "entry_price": round(t.entry_price, 2),

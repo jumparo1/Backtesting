@@ -1,7 +1,7 @@
 # Backtesting Tool
 
 ## About
-Crypto strategy backtesting engine. Describe strategies in plain English, test across 114 altcoins with 5 years of daily data. Outputs win rate, P&L, Sharpe, drawdown and full trade log.
+Crypto strategy backtesting engine. Describe strategies in plain English, test across 108 altcoins with 5 years of daily data. Supports LONG and SHORT trades. Outputs win rate, P&L, Sharpe, drawdown and full trade log.
 
 ## Stack
 - Backend: Python 3.12 (pandas, pyarrow, ccxt, anthropic)
@@ -14,14 +14,15 @@ Crypto strategy backtesting engine. Describe strategies in plain English, test a
 2. Parser converts to composable Rule objects
 3. Engine runs candle-by-candle (no look-ahead bias)
 4. Orders fill at next bar's open, stop/TP checked against high/low
-5. Metrics calculated, equity curve + trade log returned
+5. Supports LONG (buy/sell) and SHORT (short/cover) positions
+6. Metrics calculated, equity curve + trade log returned
 
 ## Project Structure
 ```
 config/       → settings, coin list
 data/         → fetcher, Parquet storage, preprocessor
-strategies/   → base class, rule system, NL parser
-engine/       → backtest loop, portfolio, orders
+strategies/   → base class, rule system, NL parser, CRT+CISD
+engine/       → backtest loop, portfolio (long+short), orders
 indicators/   → SMA, EMA, RSI, MACD, Bollinger, ATR
 metrics/      → performance calcs, reporting
 vision/       → Claude Vision screenshot analysis
@@ -33,6 +34,13 @@ ui/           → single-file web frontend
 - Always use type hints (`float | None`, `list[Order]`)
 - `@dataclass` for data containers
 - Private helpers: `_leading_underscore()`
+
+## Engine Architecture
+- **Order types:** BUY (open long), SELL (close long), SHORT (open short), COVER (close short)
+- **Long SL/TP:** SL below entry, TP above entry
+- **Short SL/TP:** SL above entry (price goes up = loss), TP below entry (price goes down = profit)
+- **Short PnL:** (entry_price - exit_price) × quantity - fees
+- **Margin model:** Short margin = quantity × entry_price (reserved from cash)
 
 ---
 
@@ -88,8 +96,8 @@ CISD is a short-term reversal signal that precedes and confirms Market Structure
 1. C2 wick sweeps above C1 high (buy-side liquidity grabbed)
 2. C2 body inside C1 body, C2 closes **red** (close < open)
 3. CISD level = C1 high (or opening price of bullish delivery)
-4. **Entry:** Sell at CISD level on C3
-5. **Stop Loss:** Just above C2 high (a few ticks past the sweep extreme)
+4. **Entry:** Sell short at C3 open
+5. **Stop Loss:** C2 high (the sweep extreme)
 6. **Take Profit:** 2.5x risk (2.5R) below entry, or target C1 low / next liquidity level
 
 #### LONG Setup (Bullish CRT + Bullish CISD)
@@ -97,8 +105,8 @@ CISD is a short-term reversal signal that precedes and confirms Market Structure
 1. C2 wick sweeps below C1 low (sell-side liquidity grabbed)
 2. C2 body inside C1 body, C2 closes **green** (close > open)
 3. CISD level = C1 low (or opening price of bearish delivery)
-4. **Entry:** Buy at CISD level on C3
-5. **Stop Loss:** Just below C2 low
+4. **Entry:** Buy at C3 open
+5. **Stop Loss:** C2 low
 6. **Take Profit:** 2.5x risk (2.5R) above entry, or target C1 high / next liquidity level
 
 #### Multi-Timeframe Alignment
@@ -124,16 +132,37 @@ Best performance when CRT aligns with daily bias and occurs during major session
 
 #### Backtesting Implementation (`strategies/crt_cisd.py`)
 
-Current implementation uses **daily candles only** (long-only, no shorting in engine):
+Current implementation uses **daily candles**, supports **both LONG and SHORT**:
 - **ENTER LONG:** Bullish CRT detected (C2 sweeps C1 low, closes green, body inside C1)
-- **EXIT:** Bearish CRT detected (C2 sweeps C1 high, closes red)
-- **SL:** C2 low | **TP:** 2.5R above entry
+- **ENTER SHORT:** Bearish CRT detected (C2 sweeps C1 high, closes red, body inside C1)
+- **Long SL:** C2 low | **Long TP:** 2.5R above entry
+- **Short SL:** C2 high | **Short TP:** 2.5R below entry
+- Opposite signal closes current position and opens new one
 - Multi-timeframe and killzone timing not yet implemented
 
-#### Example (HYPE SHORT, Feb 27 2026)
-- 1D: C1=Feb 25, C2=Feb 26 (range 25.62-29.41), C3=Feb 27
-- 1H CISD: 28.42 (C1 high)
-- Entry: 28.42 | SL: 28.45 | TP: 28.35 (2.5R)
+#### Backtest Results (Feb 2026 — 108 coins, 5yr daily, $10k capital, 0.1% fee+slippage)
+
+| Metric | Value |
+|--------|-------|
+| **Total trades** | 13,110 |
+| **LONG trades** | 6,560 (WR: 30.4%) |
+| **SHORT trades** | 6,550 (WR: 34.6%) |
+| **Overall win rate** | 32.5% |
+| **Profit factor** | 0.89 |
+| **Avg win** | $660.94 |
+| **Avg loss** | $357.52 |
+| **Win/Loss ratio** | 1.85:1 |
+| **Profitable coins** | 14/108 (13%) |
+
+**Top performers:** FTM (+402.6%), ASTER (+135.8%), ENA (+87.5%), AAVE (+63.0%), APT (+61.8%)
+
+**Analysis:** The 2.5R target produces a favorable win/loss ratio (1.85:1), but the 32.5% win rate isn't enough to overcome fees/slippage. Shorts outperform longs (34.6% vs 30.4% WR). Strategy works best on volatile coins with clear liquidity patterns.
+
+**Optimization paths:**
+- Relax body-inside-body rule → more trades, potentially higher WR
+- Add volume confirmation → fewer trades, better quality
+- Multi-timeframe alignment → enter only with daily bias
+- Adjust RR target (try 2.0R or 3.0R)
 
 ---
 

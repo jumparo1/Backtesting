@@ -49,6 +49,12 @@ def compute_metrics(
     winning = [t for t in trades if t.pnl > 0]
     losing = [t for t in trades if t.pnl <= 0]
 
+    # Long/Short breakdown
+    long_trades = [t for t in trades if t.side == "LONG"]
+    short_trades = [t for t in trades if t.side == "SHORT"]
+    long_wins = sum(1 for t in long_trades if t.pnl > 0)
+    short_wins = sum(1 for t in short_trades if t.pnl > 0)
+
     win_rate = len(winning) / total_trades if total_trades else 0.0
     avg_win = sum(t.pnl for t in winning) / len(winning) if winning else 0.0
     avg_loss = sum(t.pnl for t in losing) / len(losing) if losing else 0.0
@@ -140,6 +146,12 @@ def compute_metrics(
         "total_trades": total_trades,
         "winning_trades": len(winning),
         "losing_trades": len(losing),
+        "long_trades": len(long_trades),
+        "short_trades": len(short_trades),
+        "long_wins": long_wins,
+        "short_wins": short_wins,
+        "long_win_rate": round(long_wins / len(long_trades), 4) if long_trades else 0.0,
+        "short_win_rate": round(short_wins / len(short_trades), 4) if short_trades else 0.0,
         "win_rate": round(win_rate, 4),
         "total_return": round(total_return, 4),
         "final_equity": round(final_equity, 2),

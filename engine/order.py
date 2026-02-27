@@ -10,8 +10,10 @@ from datetime import datetime
 
 
 class OrderSide(Enum):
-    BUY = auto()
-    SELL = auto()
+    BUY = auto()    # Open long
+    SELL = auto()   # Close long
+    SHORT = auto()  # Open short
+    COVER = auto()  # Close short
 
 
 @dataclass
@@ -90,7 +92,7 @@ def execute_sell(
     fee_pct: float,
     slippage_pct: float,
 ) -> Fill:
-    """Execute a SELL (close position).
+    """Execute a SELL (close long position).
 
     fill_price: the raw price (next candle open, or stop/TP trigger).
     """
@@ -103,6 +105,71 @@ def execute_sell(
     return Fill(
         symbol=symbol,
         side=OrderSide.SELL,
+        price=actual_price,
+        quantity=quantity,
+        fee=fee,
+        slippage_cost=slippage_cost,
+    )
+
+
+def execute_short(
+    order: Order,
+    fill_price: float,
+    available_balance: float,
+    fee_pct: float,
+    slippage_pct: float,
+) -> Fill | None:
+    """Execute a SHORT order (open short position).
+
+    Sells borrowed asset at fill_price. Margin = size_pct of available balance.
+    """
+    if available_balance <= 0:
+        return None
+
+    alloc = available_balance * order.size_pct
+    if alloc <= 0:
+        return None
+
+    # Slippage works against us — short at slightly lower price
+    actual_price = fill_price * (1.0 - slippage_pct)
+    fee = alloc * fee_pct
+    margin = alloc - fee
+    if margin <= 0:
+        return None
+
+    quantity = margin / actual_price
+    slippage_cost = quantity * fill_price * slippage_pct
+
+    return Fill(
+        symbol=order.symbol,
+        side=OrderSide.SHORT,
+        price=actual_price,
+        quantity=quantity,
+        fee=fee,
+        slippage_cost=slippage_cost,
+    )
+
+
+def execute_cover(
+    symbol: str,
+    quantity: float,
+    fill_price: float,
+    fee_pct: float,
+    slippage_pct: float,
+) -> Fill:
+    """Execute a COVER (close short position — buy back).
+
+    fill_price: the raw price (next candle open, or stop/TP trigger).
+    """
+    # Slippage works against us — buy back at slightly higher price
+    actual_price = fill_price * (1.0 + slippage_pct)
+    gross = quantity * actual_price
+    fee = gross * fee_pct
+    slippage_cost = quantity * fill_price * slippage_pct
+
+    return Fill(
+        symbol=symbol,
+        side=OrderSide.COVER,
         price=actual_price,
         quantity=quantity,
         fee=fee,
