@@ -31,6 +31,11 @@ class Strategy(ABC):
         """Override to set strategy parameters from a dict."""
         pass
 
+    def describe_rules(self) -> str:
+        """Return a human-readable description of the strategy rules.
+        Override in subclasses for custom formatting."""
+        return f"Strategy: {self.name}\n  {self.description}" if self.description else f"Strategy: {self.name}"
+
     @abstractmethod
     def on_candle(self, candle: dict, indicators, portfolio) -> list[Order]:
         """Called on every candle. Return a list of Order objects to execute.

@@ -24,6 +24,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
+from strategies.base import Strategy
 from strategies.rule_based import (
     Rule,
     RuleBasedStrategy,
@@ -45,23 +46,61 @@ from strategies.rule_based import (
     MACDBelowZero,
     VolumeAboveAvg,
 )
+from strategies.crt_cisd import CRTCISDStrategy
 
 
 @dataclass
 class ParseResult:
     """Result of parsing a trade idea."""
 
-    strategy: RuleBasedStrategy | None
+    strategy: Strategy | None   # Can be RuleBasedStrategy or a custom Strategy
     success: bool
     message: str
     warnings: list[str]
 
 
-def parse_trade_idea(text: str) -> ParseResult:
-    """Parse a natural-language trade idea into a RuleBasedStrategy.
+def _try_custom_strategy(text: str) -> ParseResult | None:
+    """Check if the text matches a known custom strategy. Returns None if no match."""
 
-    First normalizes free-form language into parser-compatible syntax,
-    then runs the regex-based extraction.
+    # CRT + CISD detection
+    if re.search(r'\bcrt\b', text) or re.search(r'\bcisd\b', text) or \
+       re.search(r'\bcandle\s*range\s*theory\b', text) or \
+       re.search(r'\bliquidity\s*sweep\b', text) or \
+       re.search(r'\bliquidity\s*grab\b', text):
+
+        strategy = CRTCISDStrategy()
+
+        # Extract RR target if specified (e.g. "3R", "2.5R", "rr 3")
+        rr_match = re.search(r'(\d+(?:\.\d+)?)\s*[rR]\b', text)
+        if rr_match:
+            strategy.rr_target = float(rr_match.group(1))
+
+        rr_match2 = re.search(r'rr\s*[:=]?\s*(\d+(?:\.\d+)?)', text)
+        if rr_match2:
+            strategy.rr_target = float(rr_match2.group(1))
+
+        warnings = [
+            "Using CRT + CISD candle pattern strategy (not indicator-based).",
+            "LONG only: enters on bullish CRT (C2 sweeps C1 low), exits on bearish CRT.",
+            f"Target: {strategy.rr_target}R (risk-to-reward).",
+            "Note: Only daily candles available — multi-timeframe alignment not applied.",
+        ]
+
+        return ParseResult(
+            strategy=strategy,
+            success=True,
+            message="CRT + CISD pattern strategy loaded.",
+            warnings=warnings,
+        )
+
+    return None
+
+
+def parse_trade_idea(text: str) -> ParseResult:
+    """Parse a natural-language trade idea into a Strategy.
+
+    Checks for known custom strategies first (e.g. CRT+CISD), then falls
+    back to the regex-based NL parser for indicator strategies.
 
     Args:
         text: Free-form trade idea description.
@@ -71,6 +110,11 @@ def parse_trade_idea(text: str) -> ParseResult:
     """
     original_text = text.strip()
     text_lower = original_text.lower()
+
+    # ── Custom strategy detection ──────────────────────────────────
+    custom = _try_custom_strategy(text_lower)
+    if custom is not None:
+        return custom
     warnings: list[str] = []
 
     # ── Step 1: Smart normalization ────────────────────────────────

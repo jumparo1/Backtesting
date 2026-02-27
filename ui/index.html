@@ -820,133 +820,6 @@ body {
 }
 
 /* Syntax help guide */
-.syntax-help {
-  margin-top: 12px;
-}
-
-.syntax-toggle {
-  background: none;
-  border: none;
-  color: var(--text-dim);
-  font-size: 0.78rem;
-  cursor: pointer;
-  padding: 4px 0;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: color 0.15s;
-}
-
-.syntax-toggle:hover { color: var(--accent-h); }
-
-.syntax-toggle .chevron {
-  transition: transform 0.2s;
-  font-size: 0.6rem;
-}
-
-.syntax-toggle.open .chevron {
-  transform: rotate(90deg);
-}
-
-.syntax-guide {
-  display: none;
-  background: var(--bg-input);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 16px 20px;
-  margin-top: 8px;
-  font-size: 0.78rem;
-  line-height: 1.7;
-}
-
-.syntax-guide.visible { display: block; }
-
-.syntax-guide h4 {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--accent-h);
-  margin: 12px 0 6px;
-}
-
-.syntax-guide h4:first-child { margin-top: 0; }
-
-.syntax-guide .guide-section {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px 24px;
-}
-
-.syntax-guide .guide-item {
-  display: flex;
-  gap: 8px;
-  align-items: baseline;
-}
-
-.syntax-guide .label-natural {
-  color: var(--text-dim);
-  font-style: italic;
-  min-width: 0;
-}
-
-.syntax-guide .label-arrow {
-  color: var(--text-dim);
-  flex-shrink: 0;
-}
-
-.syntax-guide .label-parsed {
-  color: var(--green);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.72rem;
-}
-
-.syntax-guide code {
-  background: rgba(99, 102, 241, 0.1);
-  color: var(--accent-h);
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.72rem;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.syntax-guide code:hover {
-  background: rgba(99, 102, 241, 0.2);
-}
-
-.syntax-guide .examples-grid {
-  display: grid;
-  gap: 6px;
-  margin-top: 6px;
-}
-
-.syntax-guide .example-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.syntax-guide .ex-casual {
-  color: var(--text-dim);
-  min-width: 220px;
-}
-
-.syntax-guide .ex-arrow {
-  color: var(--text-dim);
-}
-
-.syntax-guide .ex-formal {
-  color: var(--green);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.72rem;
-}
-
-@media (max-width: 700px) {
-  .syntax-guide .guide-section { grid-template-columns: 1fr; }
-  .syntax-guide .example-row { flex-direction: column; align-items: flex-start; gap: 2px; }
-  .syntax-guide .ex-casual { min-width: auto; }
-}
-
 /* Symbol tabs */
 .symbol-tabs {
   display: flex;
@@ -987,85 +860,25 @@ body {
   <!-- Header -->
   <header class="header">
     <h1>Crypto Strategy Backtester</h1>
-    <p>Describe any trading strategy in your own words &mdash; AI translates it &amp; backtests instantly</p>
+    <p>Select a strategy, pick your coins, and backtest instantly</p>
   </header>
 
   <!-- Input Panel -->
   <section class="input-panel">
-    <h2>Trade Idea</h2>
+    <h2>Strategy</h2>
     <div class="strategy-selector">
-      <label>Strategy</label>
+      <label>Select</label>
       <select class="strategy-select" id="strategySelect" onchange="loadStrategy(this.value)">
-        <option value="">✍️ Custom — write your own</option>
         <option value="crt_cisd">📊 CRT + CISD (Candle Range Theory)</option>
+        <option value="">✍️ Custom — write your own</option>
       </select>
     </div>
     <textarea
       class="idea-area"
       id="ideaInput"
-      placeholder="Short on retest of broken support after a volume spike above 2x average and declining open interest. Stop loss 1.5% above entry, take profit 3%. Use 15m candles."
+      placeholder="Select a strategy above or write your own trading rules here..."
       spellcheck="false"
     ></textarea>
-
-    <!-- Syntax Help Guide -->
-    <div class="syntax-help">
-      <button class="syntax-toggle" id="syntaxToggle" onclick="toggleSyntaxGuide()">
-        <span class="chevron">&#9654;</span> How to write your trade idea
-      </button>
-      <div class="syntax-guide" id="syntaxGuide">
-        <h4>&#128161; Write however you want &mdash; the parser understands all of these:</h4>
-        <div class="examples-grid">
-          <div class="example-row">
-            <span class="ex-casual">"oversold RSI, sell overbought"</span>
-            <span class="ex-arrow">&rarr;</span>
-            <span class="ex-formal">buy when RSI below 30, sell when RSI above 70</span>
-          </div>
-          <div class="example-row">
-            <span class="ex-casual">"MACD crossover strategy"</span>
-            <span class="ex-arrow">&rarr;</span>
-            <span class="ex-formal">buy when MACD crosses above signal, sell when MACD crosses below signal</span>
-          </div>
-          <div class="example-row">
-            <span class="ex-casual">"mean reversion with Bollinger, 3% stop"</span>
-            <span class="ex-arrow">&rarr;</span>
-            <span class="ex-formal">buy when price below lower BB, sell when price above upper BB, SL 3%</span>
-          </div>
-          <div class="example-row">
-            <span class="ex-casual">"golden cross + high volume, TP 20%"</span>
-            <span class="ex-arrow">&rarr;</span>
-            <span class="ex-formal">buy when SMA 50 crosses above SMA 200 and volume 2x, TP 20%</span>
-          </div>
-          <div class="example-row">
-            <span class="ex-casual">"go long 20 MA crosses 50 MA, SL 5%"</span>
-            <span class="ex-arrow">&rarr;</span>
-            <span class="ex-formal">buy when SMA 20 crosses above SMA 50, stop loss 5%</span>
-          </div>
-        </div>
-
-        <h4>&#128295; Supported indicators</h4>
-        <div class="guide-section">
-          <div><code onclick="pasteExample('buy when RSI below 30, sell when RSI above 70')">RSI</code> &mdash; RSI below 30, RSI above 70, RSI(21) below 25</div>
-          <div><code onclick="pasteExample('buy when SMA 20 crosses above SMA 50, sell when SMA 20 crosses below SMA 50')">SMA</code> &mdash; SMA 20 crosses above/below SMA 50</div>
-          <div><code onclick="pasteExample('buy when EMA 12 crosses above EMA 26, sell when EMA 12 crosses below EMA 26')">EMA</code> &mdash; EMA 12 crosses above/below EMA 26</div>
-          <div><code onclick="pasteExample('buy when MACD crosses above signal, sell when MACD crosses below signal')">MACD</code> &mdash; MACD crosses above/below signal</div>
-          <div><code onclick="pasteExample('buy when price drops below lower Bollinger band, sell when price above upper Bollinger band')">Bollinger</code> &mdash; price above upper / below lower band</div>
-          <div><code onclick="pasteExample('buy on golden cross, sell on death cross')">Golden/Death Cross</code> &mdash; SMA 50/200 crossover</div>
-          <div><code onclick="pasteExample('buy when SMA 20 crosses above SMA 50 and volume above 2x average, sell when SMA 20 crosses below SMA 50')">Volume</code> &mdash; volume above 2x average</div>
-          <div><code onclick="pasteExample('buy when price above EMA 200, sell when price below EMA 200')">Price vs MA</code> &mdash; price above/below SMA/EMA</div>
-        </div>
-
-        <h4>&#9888;&#65039; Risk management (optional, add at end)</h4>
-        <div style="color: var(--text-dim);">
-          Add <code onclick="pasteAppend(', stop loss 5%')">stop loss 5%</code> and/or <code onclick="pasteAppend(', take profit 15%')">take profit 15%</code> to any strategy.
-          Also works: <code onclick="pasteAppend(', SL 3%, TP 10%')">SL 3%, TP 10%</code>
-        </div>
-
-        <h4>&#128640; Combine with "and"</h4>
-        <div style="color: var(--text-dim);">
-          <code onclick="pasteExample('buy when RSI below 30 and MACD crosses above signal, sell when RSI above 70')">RSI below 30 and MACD crosses above signal</code>
-        </div>
-      </div>
-    </div>
 
     <!-- Screenshot Upload -->
     <div class="upload-section">
@@ -1259,6 +1072,10 @@ function loadStrategy(key) {
 document.addEventListener('DOMContentLoaded', async () => {
   await loadCoins();
   await loadExamples();
+
+  // Load default strategy (first option in dropdown)
+  const defaultStrategy = document.getElementById('strategySelect').value;
+  if (defaultStrategy) loadStrategy(defaultStrategy);
 
   // Keyboard shortcut: Ctrl+Enter to run
   document.getElementById('ideaInput').addEventListener('keydown', (e) => {
@@ -2088,34 +1905,7 @@ function hideAnalyzeStatus() {
   document.getElementById('analyzeStatus').classList.remove('visible');
 }
 
-// ================================================================
-// SYNTAX HELP GUIDE
-// ================================================================
-function toggleSyntaxGuide() {
-  const guide = document.getElementById('syntaxGuide');
-  const toggle = document.getElementById('syntaxToggle');
-  guide.classList.toggle('visible');
-  toggle.classList.toggle('open');
-}
 
-function pasteExample(text) {
-  const textarea = document.getElementById('ideaInput');
-  textarea.value = text;
-  textarea.focus();
-  // Brief highlight
-  textarea.style.borderColor = 'var(--accent)';
-  textarea.style.boxShadow = '0 0 0 3px rgba(99, 102, 241, 0.15)';
-  setTimeout(() => {
-    textarea.style.borderColor = '';
-    textarea.style.boxShadow = '';
-  }, 1500);
-}
-
-function pasteAppend(text) {
-  const textarea = document.getElementById('ideaInput');
-  textarea.value = textarea.value.replace(/,?\s*$/, '') + text;
-  textarea.focus();
-}
 </script>
 </body>
 </html>
