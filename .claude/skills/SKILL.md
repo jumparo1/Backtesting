@@ -36,8 +36,62 @@ ui/           → single-file web frontend
 
 ---
 
+## Strategies
+
+### CRT + CISD (Candle Range Theory + Change in State of Delivery)
+
+**Concept:** A 3-candle price action pattern that identifies liquidity grabs and structural shifts for high-RR entries.
+
+**CRT (Candle Range Theory) — The Pattern:**
+- **C1 (Setup):** Establishes a range — its high and low become liquidity pools
+- **C2 (Manipulation/Sweep):** Sweeps beyond C1's extreme to grab liquidity (stop hunts)
+- **C3 (Expansion):** Moves in the opposite direction of the sweep — the real move
+
+**CISD (Change in State of Delivery) — The Entry:**
+- The exact price level where delivery shifts from one direction to the other
+- For SHORT: CISD = C1's high. C2 sweeps above it, price returns below → enter short at this level
+- For LONG: CISD = C1's low. C2 sweeps below it, price returns above → enter long at this level
+
+**SHORT Setup:**
+1. C2 makes a higher high than C1 (sweeps buy-side liquidity)
+2. C2 closes back inside C1's range or below C1's high
+3. CISD level = C1 high
+4. Entry: Sell at CISD (C1 high) on C3
+5. Stop Loss: Just above C2 high (tight, a few ticks)
+6. Take Profit: 2.5x risk (2.5R) below entry
+
+**LONG Setup:**
+1. C2 makes a lower low than C1 (sweeps sell-side liquidity)
+2. C2 closes back inside C1's range or above C1's low
+3. CISD level = C1 low
+4. Entry: Buy at CISD (C1 low) on C3
+5. Stop Loss: Just below C2 low
+6. Take Profit: 2.5x risk (2.5R) above entry
+
+**Multi-Timeframe Alignment:**
+- **1D CRT** → Determines macro bias (SHORT or LONG for the day)
+- **1H CRT + CISD** → Confirms direction aligns with 1D, identifies entry zone
+- **5M** → Precision entry at CISD level with tight stop
+
+**Key Filters:**
+- "Both sides swept" = stronger signal (C2 swept both C1 high AND low)
+- 1H direction must align with 1D direction
+- Best setups: C2 has long wick beyond C1 extreme but closes inside range
+
+**Risk Management:**
+- Risk per trade: 0.10% of capital
+- RR target: 2.5R minimum
+- SL always at C2 extreme (natural invalidation point)
+
+**Example (HYPE SHORT, Feb 27 2026):**
+- 1D: C1=Feb 25, C2=Feb 26 (range 25.62-29.41), C3=Feb 27
+- 1H CISD: 28.42 (C1 high)
+- Entry: 28.42 | SL: 28.45 | TP: 28.35 (2.5R)
+
+---
+
 ## Your Trading Knowledge
-<!-- Paste your trading skills, setups, and strategies below this line -->
+<!-- Paste additional trading skills, setups, and strategies below this line -->
 <!-- Claude will use this context when helping with backtesting -->
 
 

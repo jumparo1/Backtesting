@@ -208,6 +208,51 @@ body {
   border-color: var(--accent);
 }
 
+/* Strategy Selector */
+.strategy-selector {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 14px;
+  align-items: center;
+}
+
+.strategy-selector label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.strategy-select {
+  flex: 1;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+
+.strategy-select:hover { border-color: var(--accent); }
+.strategy-select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); }
+
+.strategy-select option {
+  background: var(--bg-card);
+  color: var(--text);
+  padding: 8px;
+}
+
 /* Buttons */
 .btn-row {
   display: flex;
@@ -948,6 +993,13 @@ body {
   <!-- Input Panel -->
   <section class="input-panel">
     <h2>Trade Idea</h2>
+    <div class="strategy-selector">
+      <label>Strategy</label>
+      <select class="strategy-select" id="strategySelect" onchange="loadStrategy(this.value)">
+        <option value="">✍️ Custom — write your own</option>
+        <option value="crt_cisd">📊 CRT + CISD (Candle Range Theory)</option>
+      </select>
+    </div>
     <textarea
       class="idea-area"
       id="ideaInput"
@@ -1156,11 +1208,50 @@ body {
 // ================================================================
 // STATE
 // ================================================================
+const FALLBACK_COINS = ["BTC","ETH","XRP","BNB","SOL","DOGE","ADA","TRX","TON","LINK","AVAX","SUI","XLM","SHIB","HBAR","DOT","BCH","HYPE","LTC","UNI","LEO","NEAR","APT","ICP","AAVE","PEPE","ETC","RENDER","XMR","ATOM","MNT","CRO","VET","FIL","ARB","KAS","OKB","TIA","FTM","ALGO","BONK","OP","INJ","STX","IMX","THETA","SEI","GRT","FLOKI","MKR","POL","PYTH","WLD","JUP","GALA","LDO","FLOW","SAND","AXS","MANA","XTZ","EOS","KCS","TAO","RAY","ONDO","QNT","NEO","IOTA","AR","CHZ","ENJ","DYDX","PENDLE","WOO","CRV","1INCH","KAVA","MINA","ZIL","CELO","CAKE","COMP","SNX","FET","OCEAN","MASK","LRC","IOTX","CFX","RPL","RUNE","GMX","BLUR","HNT","EIGEN","ENA","JTO","W","PRIME"];
+const FALLBACK_EXAMPLES = [
+  "buy when RSI below 30, sell when RSI above 70",
+  "buy when EMA 12 crosses above EMA 26, sell when EMA 12 crosses below EMA 26",
+  "buy when price drops below lower Bollinger band, sell when price above upper Bollinger band",
+  "buy when MACD crosses above signal and RSI below 50, sell when MACD crosses below signal",
+  "buy on golden cross, sell on death cross, stop loss 5%, take profit 15%",
+  "buy when SMA 20 crosses above SMA 50 and volume above 2x average, sell when SMA 20 crosses below SMA 50",
+  "buy when RSI below 25 and price below EMA 200, sell when RSI above 75"
+];
 let availableCoins = [];
 let selectedCoins = new Set();
 let selectedPeriodDays = 1825; // default 5Y
 let backtestData = null;
 let currentSymbol = null;
+
+// ================================================================
+// STRATEGY TEMPLATES
+// ================================================================
+const STRATEGY_TEMPLATES = {
+  crt_cisd: {
+    name: "CRT + CISD (Candle Range Theory + Change in State of Delivery)",
+    description: `CRT + CISD Strategy (SHORT bias):
+Identify 3-candle sequence: C1 (setup), C2 (manipulation/sweep), C3 (expansion).
+SHORT: When C2 sweeps above C1 high (liquidity grab), enter short on return below C1 high (CISD level).
+LONG: When C2 sweeps below C1 low (liquidity grab), enter long on return above C1 low (CISD level).
+Stop loss at C2 extreme (tight). Take profit at 2.5x risk (2.5R).
+Multi-timeframe: Use 1D CRT for direction, 1H CRT+CISD for entry confirmation.`
+  }
+};
+
+function loadStrategy(key) {
+  const textarea = document.getElementById('ideaInput');
+  if (!key) {
+    textarea.value = '';
+    textarea.placeholder = "Short on retest of broken support after a volume spike above 2x average and declining open interest. Stop loss 1.5% above entry, take profit 3%. Use 15m candles.";
+    return;
+  }
+  const tmpl = STRATEGY_TEMPLATES[key];
+  if (tmpl) {
+    textarea.value = tmpl.description;
+    textarea.focus();
+  }
+}
 
 // ================================================================
 // INIT
@@ -1196,57 +1287,61 @@ async function loadCoins() {
     const resp = await fetch('/api/coins');
     const data = await resp.json();
     availableCoins = data.coins || [];
-
-    const container = document.getElementById('coinChips');
-    container.innerHTML = '';
-
-    // "All" chip
-    const allChip = document.createElement('div');
-    allChip.className = 'coin-chip';
-    allChip.textContent = 'ALL';
-    allChip.onclick = () => toggleAll(allChip);
-    container.appendChild(allChip);
-
-    availableCoins.forEach(sym => {
-      const chip = document.createElement('div');
-      chip.className = 'coin-chip';
-      chip.textContent = sym;
-      chip.dataset.symbol = sym;
-      chip.onclick = () => toggleCoin(chip, sym);
-      container.appendChild(chip);
-    });
-
-    // Auto-select BTC if available
-    if (availableCoins.includes('BTC')) {
-      const btcChip = container.querySelector('[data-symbol="BTC"]');
-      if (btcChip) toggleCoin(btcChip, 'BTC');
-    }
   } catch (e) {
-    console.error('Failed to load coins:', e);
+    console.warn('Backend not available, using embedded coin list');
+    availableCoins = FALLBACK_COINS;
+  }
+
+  const container = document.getElementById('coinChips');
+  container.innerHTML = '';
+
+  // "All" chip
+  const allChip = document.createElement('div');
+  allChip.className = 'coin-chip';
+  allChip.textContent = 'ALL';
+  allChip.onclick = () => toggleAll(allChip);
+  container.appendChild(allChip);
+
+  availableCoins.forEach(sym => {
+    const chip = document.createElement('div');
+    chip.className = 'coin-chip';
+    chip.textContent = sym;
+    chip.dataset.symbol = sym;
+    chip.onclick = () => toggleCoin(chip, sym);
+    container.appendChild(chip);
+  });
+
+  // Auto-select BTC if available
+  if (availableCoins.includes('BTC')) {
+    const btcChip = container.querySelector('[data-symbol="BTC"]');
+    if (btcChip) toggleCoin(btcChip, 'BTC');
   }
 }
 
 async function loadExamples() {
+  let examples = FALLBACK_EXAMPLES;
   try {
     const resp = await fetch('/api/examples');
     const data = await resp.json();
-    const list = document.getElementById('examplesList');
-    list.innerHTML = '';
-
-    (data.examples || []).forEach(ex => {
-      const item = document.createElement('div');
-      item.className = 'example-item';
-      item.textContent = ex;
-      item.onclick = () => {
-        document.getElementById('ideaInput').value = ex;
-        list.classList.remove('open');
-        document.getElementById('ideaInput').focus();
-      };
-      list.appendChild(item);
-    });
+    examples = data.examples || FALLBACK_EXAMPLES;
   } catch (e) {
-    console.error('Failed to load examples:', e);
+    console.warn('Backend not available, using embedded examples');
   }
+
+  const list = document.getElementById('examplesList');
+  list.innerHTML = '';
+
+  examples.forEach(ex => {
+    const item = document.createElement('div');
+    item.className = 'example-item';
+    item.textContent = ex;
+    item.onclick = () => {
+      document.getElementById('ideaInput').value = ex;
+      list.classList.remove('open');
+      document.getElementById('ideaInput').focus();
+    };
+    list.appendChild(item);
+  });
 }
 
 // ================================================================
