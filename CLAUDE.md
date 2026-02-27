@@ -14,12 +14,12 @@ Crypto strategy backtesting engine — describe strategies in plain English, tes
 - [x] Web UI with coin selector, equity chart, trade log
 - [x] 108 coins fetched and cached (99 current as of 2026-02-27)
 - [x] Claude Vision screenshot analysis
-- [x] Deploy frontend to Netlify
+- [x] Deploy frontend to Netlify (via `npx netlify-cli deploy --prod --dir=.` from `/Users/jumparo/deploy/`)
 - [x] Fallback coin list + examples in UI (works without backend)
 - [x] Strategy dropdown menu (first strategy: CRT + CISD)
 - [x] CRT + CISD strategy documented in SKILL.md
+- [x] CRT + CISD implemented in engine (`strategies/crt_cisd.py`) — body-inside-body, candle color, min sweep depth
 - [ ] Backend not hosted yet (runs locally only)
-- [ ] CRT + CISD needs custom engine implementation (NL parser can't handle candle patterns yet)
 - [ ] 12 top-100 coins stale (CRO, KAS, LEO, OKB, KCS, MKR, MNT, FTM, HNT, EOS, XMR, OCEAN — not on Binance)
 - [ ] No automated tests
 
@@ -31,10 +31,10 @@ Crypto strategy backtesting engine — describe strategies in plain English, tes
 - 2026-02-27: Pushed all source + data to GitHub, added SKILL.md
 
 ## Next Steps
-- Implement CRT + CISD in backtesting engine (candle pattern detection)
 - Fix stale coin data (need alternative sources for non-Binance coins)
 - Host backend (Render prepared but paused)
 - Add more strategies to dropdown
+- Add short-selling support to engine (bearish CRT currently only exits longs)
 
 ## How to Run
 ```bash

@@ -1021,7 +1021,7 @@ body {
 // ================================================================
 // STATE
 // ================================================================
-const FALLBACK_COINS = ["BTC","ETH","XRP","BNB","SOL","DOGE","ADA","TRX","TON","LINK","AVAX","SUI","XLM","SHIB","HBAR","DOT","BCH","HYPE","LTC","UNI","LEO","NEAR","APT","ICP","AAVE","PEPE","ETC","RENDER","XMR","ATOM","MNT","CRO","VET","FIL","ARB","KAS","OKB","TIA","FTM","ALGO","BONK","OP","INJ","STX","IMX","THETA","SEI","GRT","FLOKI","MKR","POL","PYTH","WLD","JUP","GALA","LDO","FLOW","SAND","AXS","MANA","XTZ","EOS","KCS","TAO","RAY","ONDO","QNT","NEO","IOTA","AR","CHZ","ENJ","DYDX","PENDLE","WOO","CRV","1INCH","KAVA","MINA","ZIL","CELO","CAKE","COMP","SNX","FET","OCEAN","MASK","LRC","IOTX","CFX","RPL","RUNE","GMX","BLUR","HNT","EIGEN","ENA","JTO","W","PRIME"];
+const FALLBACK_COINS = ["1INCH","AAVE","ADA","ALGO","APT","AR","ARB","ASTER","ATOM","AVAX","AXS","BCH","BLUR","BNB","BONK","BTC","CAKE","CELO","CFX","CHZ","COMP","CRO","CRV","DASH","DCR","DOGE","DOT","DYDX","EIGEN","ENA","ENJ","EOS","ETC","ETH","FET","FIL","FLOKI","FLOW","FTM","GALA","GMX","GRT","HBAR","HNT","HYPE","ICP","IMX","INJ","IOTA","IOTX","JTO","JUP","KAS","KAVA","KCS","LDO","LEO","LINK","LRC","LTC","MANA","MASK","MINA","MKR","MNT","MORPHO","NEAR","NEO","NEXO","OCEAN","OKB","ONDO","OP","PENDLE","PENGU","PEPE","POL","PYTH","QNT","RAY","RENDER","RPL","RUNE","SAND","SEI","SHIB","SKY","SNX","SOL","STX","SUI","TAO","THETA","TIA","TON","TRUMP","TRX","UNI","VET","W","WLD","WOO","XLM","XMR","XRP","XTZ","ZEC","ZIL"];
 const FALLBACK_EXAMPLES = [
   "buy when RSI below 30, sell when RSI above 70",
   "buy when EMA 12 crosses above EMA 26, sell when EMA 12 crosses below EMA 26",
@@ -1032,6 +1032,9 @@ const FALLBACK_EXAMPLES = [
   "buy when RSI below 25 and price below EMA 200, sell when RSI above 75"
 ];
 let availableCoins = [];
+// Backend API base URL — set to hosted backend when available, empty for local
+const API_BASE = '';
+
 let selectedCoins = new Set();
 let selectedPeriodDays = 1825; // default 5Y
 let backtestData = null;
@@ -1101,7 +1104,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadCoins() {
   try {
-    const resp = await fetch('/api/coins');
+    const resp = await fetch(`${API_BASE}/api/coins`);
     const data = await resp.json();
     availableCoins = data.coins || [];
   } catch (e) {
@@ -1138,7 +1141,7 @@ async function loadCoins() {
 async function loadExamples() {
   let examples = FALLBACK_EXAMPLES;
   try {
-    const resp = await fetch('/api/examples');
+    const resp = await fetch(`${API_BASE}/api/examples`);
     const data = await resp.json();
     examples = data.examples || FALLBACK_EXAMPLES;
   } catch (e) {
@@ -1214,7 +1217,7 @@ async function runBacktest(overrideIdea) {
   document.getElementById('runBtn').disabled = true;
 
   try {
-    const resp = await fetch('/api/backtest', {
+    const resp = await fetch(`${API_BASE}/api/backtest`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -1226,6 +1229,12 @@ async function runBacktest(overrideIdea) {
         period_days: selectedPeriodDays,
       }),
     });
+
+    const ct = resp.headers.get('content-type') || '';
+    if (!ct.includes('application/json')) {
+      showError('Backend not running. Start the server locally:\n\ncd JumpTools/Backtesting && python web_server.py');
+      return;
+    }
 
     const data = await resp.json();
 
@@ -1243,7 +1252,11 @@ async function runBacktest(overrideIdea) {
     renderResults(data);
 
   } catch (e) {
-    showError(`Request failed: ${e.message}`);
+    if (e instanceof TypeError && e.message.includes('Failed to fetch')) {
+      showError('Backend not running. Start the server locally:\n\ncd JumpTools/Backtesting && python web_server.py');
+    } else {
+      showError(`Request failed: ${e.message}`);
+    }
   } finally {
     hide('spinner');
     document.getElementById('runBtn').disabled = false;
@@ -1255,12 +1268,17 @@ async function handleAITranslation(originalIdea, capital, feePct, slipPct) {
   showSpinner('🔮 Translating your idea with AI...');
 
   try {
-    const resp = await fetch('/api/translate-idea', {
+    const resp = await fetch(`${API_BASE}/api/translate-idea`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ idea: originalIdea }),
     });
 
+    const ct = resp.headers.get('content-type') || '';
+    if (!ct.includes('application/json')) {
+      showError('Backend not running — AI translation requires the local server.');
+      return;
+    }
     const data = await resp.json();
 
     if (!data.success || !data.trade_idea) {
@@ -1312,7 +1330,7 @@ async function handleAITranslation(originalIdea, capital, feePct, slipPct) {
 
     // Now auto-run the backtest with the translated idea
     showSpinner('Running backtest...');
-    const btResp = await fetch('/api/backtest', {
+    const btResp = await fetch(`${API_BASE}/api/backtest`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -1835,11 +1853,16 @@ async function analyzeScreenshot(apiKeyOverride) {
     const key = apiKeyOverride || savedApiKey;
     if (key) formData.append('api_key', key);
 
-    const resp = await fetch('/api/analyze-screenshot', {
+    const resp = await fetch(`${API_BASE}/api/analyze-screenshot`, {
       method: 'POST',
       body: formData,
     });
 
+    const ct = resp.headers.get('content-type') || '';
+    if (!ct.includes('application/json')) {
+      showAnalyzeStatus('Backend not running — screenshot analysis requires the local server.', 'error');
+      return;
+    }
     const data = await resp.json();
 
     if (data.success && data.trade_idea) {
