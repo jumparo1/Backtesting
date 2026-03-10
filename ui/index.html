@@ -933,6 +933,67 @@ body {
 .symbol-tab.active { background: var(--bg-card); border-color: var(--accent); color: var(--accent-h); border-bottom-color: var(--bg-card); }
 
 /* ================================================================
+   SUGGESTIONS PANEL
+   ================================================================ */
+.suggestions-panel {
+  display: none;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  margin-top: 24px;
+}
+
+.suggestions-panel.visible { display: block; }
+
+.suggestions-panel h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.suggestion-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.suggestion-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--text-dim);
+  transition: border-color 0.15s;
+}
+
+.suggestion-item:hover { border-color: var(--accent); }
+
+.suggestion-item .sug-icon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  background: rgba(99, 102, 241, 0.15);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+}
+
+.suggestion-item .sug-text strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* ================================================================
    RESPONSIVE
    ================================================================ */
 @media (max-width: 700px) {
@@ -1110,6 +1171,12 @@ body {
         <table class="trades-table" id="tradesTable"></table>
       </div>
     </div>
+  </section>
+
+  <!-- Strategy Improvement Suggestions -->
+  <section class="suggestions-panel" id="suggestionsPanel">
+    <h3>How to Improve Win Rate</h3>
+    <div class="suggestion-list" id="suggestionList"></div>
   </section>
 
 </div>
@@ -1341,6 +1408,7 @@ async function runBacktest(overrideIdea) {
   hide('strategyCard');
   hide('errorBox');
   hideTranslateBanner();
+  document.getElementById('suggestionsPanel').classList.remove('visible');
   showSpinner('Running backtest...');
   document.getElementById('runBtn').disabled = true;
 
@@ -1560,8 +1628,64 @@ function renderResults(data) {
 
   show('resultsSection');
 
+  // Show improvement suggestions based on results
+  showSuggestions(validResults);
+
   // Scroll to results
   document.getElementById('strategyCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function showSuggestions(results) {
+  const panel = document.getElementById('suggestionsPanel');
+  const list = document.getElementById('suggestionList');
+  list.innerHTML = '';
+
+  // Aggregate metrics across results
+  const avgWinRate = results.reduce((s, r) => s + (r.metrics?.win_rate || 0), 0) / results.length;
+  const avgProfitFactor = results.reduce((s, r) => s + (r.metrics?.profit_factor || 0), 0) / results.length;
+  const totalTrades = results.reduce((s, r) => s + (r.metrics?.total_trades || 0), 0);
+  const avgMaxDrawdown = results.reduce((s, r) => s + (Math.abs(r.metrics?.max_drawdown || 0)), 0) / results.length;
+
+  const suggestions = [];
+
+  if (totalTrades === 0) {
+    suggestions.push({ icon: '🔍', title: 'No trades triggered', text: 'Loosen entry conditions or test on more coins and longer periods to generate signals.' });
+    panel.classList.add('visible');
+    list.innerHTML = suggestions.map(s => `<div class="suggestion-item"><div class="sug-icon">${s.icon}</div><div class="sug-text"><strong>${s.title}</strong> — ${s.text}</div></div>`).join('');
+    return;
+  }
+
+  // Always-relevant suggestions
+  if (avgWinRate < 40) {
+    suggestions.push({ icon: '🎯', title: 'Add confirmation filters', text: 'Win rate is low. Add a trend filter (e.g. only trade in direction of 200 EMA) or volume confirmation to reduce false signals.' });
+    suggestions.push({ icon: '⏳', title: 'Try higher timeframes', text: 'Lower timeframes produce more noise. Test on 4H or 1D candles for cleaner setups with higher probability.' });
+  } else if (avgWinRate < 55) {
+    suggestions.push({ icon: '🎯', title: 'Tighten entry criteria', text: 'Consider adding confluence — e.g. RSI divergence, key support/resistance levels, or multi-timeframe alignment.' });
+  }
+
+  if (avgProfitFactor < 1.0) {
+    suggestions.push({ icon: '📉', title: 'Improve risk-reward ratio', text: 'Profit factor below 1 means losses outweigh wins. Widen take-profit or tighten stop-loss to improve R:R.' });
+  } else if (avgProfitFactor < 1.5) {
+    suggestions.push({ icon: '💰', title: 'Let winners run longer', text: 'Consider trailing stops or scaling out of positions to capture more upside on winning trades.' });
+  }
+
+  if (avgMaxDrawdown > 30) {
+    suggestions.push({ icon: '🛡️', title: 'Reduce drawdown risk', text: 'Max drawdown is high. Add position sizing rules, reduce leverage, or add a max daily loss limit.' });
+  }
+
+  if (totalTrades / results.length < 5) {
+    suggestions.push({ icon: '📊', title: 'Increase sample size', text: 'Too few trades for statistical significance. Test over longer periods or relax entry conditions slightly.' });
+  }
+
+  // General suggestions that always apply
+  suggestions.push({ icon: '🔄', title: 'Test across market conditions', text: 'Backtest in both bull and bear periods. A strategy that only works in one regime may underperform when conditions change.' });
+
+  if (avgWinRate >= 55 && avgProfitFactor >= 1.5) {
+    suggestions.push({ icon: '🚀', title: 'Strategy looks promising', text: 'Consider forward-testing on paper before going live. Monitor for curve-fitting by testing on out-of-sample data.' });
+  }
+
+  list.innerHTML = suggestions.map(s => `<div class="suggestion-item"><div class="sug-icon">${s.icon}</div><div class="sug-text"><strong>${s.title}</strong> — ${s.text}</div></div>`).join('');
+  panel.classList.add('visible');
 }
 
 function showOverview(results) {
