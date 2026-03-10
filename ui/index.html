@@ -1222,13 +1222,13 @@ Stop loss at C2 extreme (tight). Take profit at 2.5x risk (2.5R).
 Multi-timeframe: Use 1D CRT for direction, 1H CRT+CISD for entry confirmation.`
   },
   spike_reversal: {
-    name: "Spike Exhaustion Reversal (4-Layer Confirmation)",
-    description: `Spike Exhaustion Reversal strategy (enhanced with journal filters):
-Fade parabolic spikes with 4-layer confirmation: RSI + StochRSI + ZC Momentum + Volume.
-ENTER LONG when ALL met: Price drops >15% in 5 candles + hammer candle + RSI < 30 + StochRSI %K < 20 with %K > %D (bullish crossover) + momentum recovering (ZC filter) + volume > 2x average.
-EXIT: Price gains >15% + rejection wick + RSI > 70 + StochRSI > 80 or momentum decelerating.
+    name: "Spike Exhaustion Reversal (RSI + SRSI + Momentum + Vol)",
+    description: `Spike Exhaustion Reversal strategy (scored confirmation):
+Fade parabolic spikes — enter on sharp drops, exit on blow-off tops.
+ENTER LONG: Price drops >5% in 5 candles + rejection candle (hammer or green close) + at least 2 of 4 confirmations: RSI < 40, StochRSI %K < 30 with bullish cross, momentum recovering (ZC filter), volume > 1.5x average.
+EXIT: Price gains >5% + at least 2 of 4: rejection wick, RSI > 65, StochRSI > 75, momentum decelerating.
 SL at spike low. TP at 2R.
-Journal-backed: 4 independent filters reduce false signals significantly.`
+Scored system: more confirmations = higher conviction signal.`
   },
   mr_long: {
     name: "MR Long — Journal Edge (Mean Reversion Long)",
