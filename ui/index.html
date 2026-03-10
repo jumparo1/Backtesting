@@ -1024,7 +1024,7 @@ body {
       <label>Select</label>
       <select class="strategy-select" id="strategySelect" onchange="loadStrategy(this.value)">
         <option value="crt_cisd">📊 CRT + CISD (Candle Range Theory)</option>
-        <option value="spike_reversal">⚡ Spike Exhaustion Reversal (Fade Parabolic Moves)</option>
+        <option value="spike_reversal">⚡ Spike Exhaustion Reversal (RSI + SRSI + Momentum + Vol)</option>
         <option value="mr_long">🎯 MR Long — Journal Edge (Mean Reversion)</option>
         <option value="">✍️ Custom — write your own</option>
       </select>
@@ -1222,13 +1222,13 @@ Stop loss at C2 extreme (tight). Take profit at 2.5x risk (2.5R).
 Multi-timeframe: Use 1D CRT for direction, 1H CRT+CISD for entry confirmation.`
   },
   spike_reversal: {
-    name: "Spike Exhaustion Reversal (Fade Parabolic Moves)",
-    description: `Spike Exhaustion Reversal strategy:
-Fade parabolic spikes — enter long after capitulation drops, exit on blow-off tops.
-LONG: Price drops >15% in 5 candles + hammer candle (lower wick > 1.5x body) + RSI < 30 + volume > 2x average.
-EXIT: Price gains >15% in 5 candles + rejection wick (upper wick > 1.5x body) + RSI > 70.
-SL at spike low. TP at 2R (2x risk).
-Mean-reversion edge: fading unsustainable moves back toward equilibrium.`
+    name: "Spike Exhaustion Reversal (4-Layer Confirmation)",
+    description: `Spike Exhaustion Reversal strategy (enhanced with journal filters):
+Fade parabolic spikes with 4-layer confirmation: RSI + StochRSI + ZC Momentum + Volume.
+ENTER LONG when ALL met: Price drops >15% in 5 candles + hammer candle + RSI < 30 + StochRSI %K < 20 with %K > %D (bullish crossover) + momentum recovering (ZC filter) + volume > 2x average.
+EXIT: Price gains >15% + rejection wick + RSI > 70 + StochRSI > 80 or momentum decelerating.
+SL at spike low. TP at 2R.
+Journal-backed: 4 independent filters reduce false signals significantly.`
   },
   mr_long: {
     name: "MR Long — Journal Edge (Mean Reversion Long)",

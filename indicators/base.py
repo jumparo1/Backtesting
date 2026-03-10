@@ -145,6 +145,104 @@ class IndicatorEngine:
         histogram = macd_val - signal_val
         return (macd_val, signal_val, histogram)
 
+    def stoch_rsi(
+        self, rsi_period: int = 14, stoch_period: int = 14,
+        k_smooth: int = 3, d_smooth: int = 3,
+    ) -> tuple[float, float] | None:
+        """Stochastic RSI: (%K, %D).
+
+        Applies a stochastic oscillator to RSI values.
+        %K = SMA(k_smooth) of raw StochRSI
+        %D = SMA(d_smooth) of %K
+        Both values range 0–100.
+
+        Needs rsi_period + stoch_period + max(k_smooth, d_smooth) bars.
+        """
+        needed = rsi_period + stoch_period + max(k_smooth, d_smooth) + 1
+        if self.size < needed:
+            return None
+
+        closes = self._closes()
+        # Build RSI series for every bar from rsi_period+1 onward
+        changes = [closes[i] - closes[i - 1] for i in range(1, len(closes))]
+        rsi_series: list[float] = []
+
+        avg_gain = sum(max(c, 0) for c in changes[:rsi_period]) / rsi_period
+        avg_loss = sum(max(-c, 0) for c in changes[:rsi_period]) / rsi_period
+
+        if avg_loss == 0:
+            rsi_series.append(100.0)
+        else:
+            rs = avg_gain / avg_loss
+            rsi_series.append(100.0 - (100.0 / (1.0 + rs)))
+
+        for c in changes[rsi_period:]:
+            avg_gain = (avg_gain * (rsi_period - 1) + max(c, 0)) / rsi_period
+            avg_loss = (avg_loss * (rsi_period - 1) + max(-c, 0)) / rsi_period
+            if avg_loss == 0:
+                rsi_series.append(100.0)
+            else:
+                rs = avg_gain / avg_loss
+                rsi_series.append(100.0 - (100.0 / (1.0 + rs)))
+
+        if len(rsi_series) < stoch_period:
+            return None
+
+        # Raw StochRSI = (RSI - min(RSI, N)) / (max(RSI, N) - min(RSI, N))
+        raw_stoch: list[float] = []
+        for i in range(stoch_period - 1, len(rsi_series)):
+            window = rsi_series[i - stoch_period + 1 : i + 1]
+            lo = min(window)
+            hi = max(window)
+            if hi == lo:
+                raw_stoch.append(50.0)  # neutral when flat
+            else:
+                raw_stoch.append(((rsi_series[i] - lo) / (hi - lo)) * 100.0)
+
+        if len(raw_stoch) < k_smooth:
+            return None
+
+        # %K = SMA of raw stoch
+        k_series: list[float] = []
+        for i in range(k_smooth - 1, len(raw_stoch)):
+            k_series.append(sum(raw_stoch[i - k_smooth + 1 : i + 1]) / k_smooth)
+
+        if len(k_series) < d_smooth:
+            return None
+
+        # %D = SMA of %K
+        d_val = sum(k_series[-d_smooth:]) / d_smooth
+        k_val = k_series[-1]
+
+        return (k_val, d_val)
+
+    def momentum(self, period: int = 10) -> float | None:
+        """Rate of Change (ROC) momentum indicator.
+
+        Returns percentage change over `period` bars:
+          ROC = ((close - close[period ago]) / close[period ago]) * 100
+
+        Positive = bullish momentum, Negative = bearish.
+        Zero-crossing signals trend shift.
+        """
+        if self.size < period + 1:
+            return None
+        cur = self.history[-1]["close"]
+        prev = self.history[-(period + 1)]["close"]
+        if prev == 0:
+            return None
+        return ((cur - prev) / prev) * 100.0
+
+    def momentum_prev(self, period: int = 10) -> float | None:
+        """ROC from the previous bar (for detecting zero crossings)."""
+        if self.size < period + 2:
+            return None
+        cur = self.history[-2]["close"]
+        prev = self.history[-(period + 2)]["close"]
+        if prev == 0:
+            return None
+        return ((cur - prev) / prev) * 100.0
+
     # ------------------------------------------------------------------
     # Volatility
     # ------------------------------------------------------------------
