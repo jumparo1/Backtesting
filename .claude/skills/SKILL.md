@@ -137,6 +137,90 @@ Current implementation uses **daily candles only** (long-only, no shorting in en
 
 ---
 
+### Spike Exhaustion Reversal (RSI + StochRSI + ZC Momentum + Volume)
+
+**Source:** Journal-backed — enhanced with 4-layer scored confirmation from trading journal patterns.
+
+#### Concept
+
+Detects unsustainable price spikes (parabolic moves) and trades the mean-reversion back toward equilibrium. Uses a **scored confirmation system** — spike + rejection candle is always required, then at least 2 of 4 confirmation layers must align.
+
+#### Parameters (in `strategies/spike_reversal.py`)
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `spike_pct` | 0.03 (3%) | Minimum % move to qualify as a spike |
+| `lookback` | 5 | Number of candles to measure the spike over |
+| `wick_ratio` | 1.5 | Min wick-to-body ratio for strong rejection |
+| `rsi_os` | 40 | RSI oversold threshold for entry |
+| `rsi_ob` | 65 | RSI overbought threshold for exit |
+| `srsi_os` | 30 | StochRSI %K oversold threshold |
+| `srsi_ob` | 75 | StochRSI %K overbought threshold |
+| `mom_period` | 10 | Momentum/ROC period for ZC filter |
+| `vol_mult` | 1.5 | Volume must exceed this × 20-period avg |
+| `min_confirms` | 2 | Minimum confirmation layers needed (of 4) |
+| `rr_target` | 2.0 | Reward:risk ratio for take-profit |
+
+#### LONG Setup (After Spike DOWN)
+
+**Required (always):**
+1. Price drops ≥ `spike_pct` within `lookback` candles
+2. Candle shows rejection: hammer wick (lower wick > 1.5× body) OR green close
+
+**Confirmation layers (need 2 of 4):**
+1. **RSI(14) < 40** — oversold
+2. **StochRSI %K < 30 + %K > %D** — bullish crossover in oversold zone
+3. **Momentum(ROC) recovering** — current ROC > previous ROC (selling pressure easing)
+4. **Volume > 1.5× 20-period average** — capitulation volume
+
+**SL:** Spike low (candle low) | **TP:** 2R above entry
+
+#### EXIT (Spike UP with position)
+
+**Required:** Price gains ≥ `spike_pct` within `lookback` candles
+
+**Confirmation layers (need 2 of 4):**
+1. Rejection wick (upper wick > 1.5× body)
+2. RSI(14) > 65 (overbought)
+3. StochRSI %K > 75
+4. Momentum decelerating (current ROC < previous ROC)
+
+#### Indicator Definitions
+
+- **StochRSI:** Stochastic oscillator applied to RSI values. %K = SMA(3) of raw StochRSI, %D = SMA(3) of %K. Range 0–100. Bullish when %K crosses above %D in oversold zone.
+- **Momentum/ROC:** Rate of Change = ((close - close[N ago]) / close[N ago]) × 100. Positive = bullish, negative = bearish. Zero-crossing signals trend shift.
+
+#### Calibration Notes (BTC daily)
+- 3% threshold → ~99 spike events/year, ~7 trades/year after filtering
+- Scored 2-of-4 system is critical — requiring ALL conditions (AND gate) produces 0 trades
+- Thresholds intentionally relaxed from textbook values (RSI 40 vs 30, SRSI 30 vs 20) to allow realistic signal frequency
+
+---
+
+### MR Long (Journal Edge)
+
+**Source:** Reverse-engineered from trading journal — 100% WR on 8 trades.
+
+#### Concept
+
+Mean reversion long — buy support bounces at EMA pullback, sell at mean/resistance. Journal keyword signals: retest, ema, reversion, bounce, rejection, support.
+
+#### ENTRY (ALL conditions required)
+1. Price low dips to/below EMA(21), close bounces above
+2. RSI(14) < 40 (stretched but not extreme)
+3. Hammer candle (lower wick > 1.5× body)
+4. Candle closes green (bullish rejection)
+5. Lower Bollinger Band touch (within 1% tolerance)
+
+**SL:** Candle low | **TP:** 2R above entry
+
+#### EXIT
+- RSI(14) > 65 (approaching overbought)
+- OR price hits upper Bollinger Band
+- OR take-profit / stop-loss hit
+
+---
+
 ## Your Trading Knowledge
 <!-- Paste additional trading skills, setups, and strategies below this line -->
 <!-- Claude will use this context when helping with backtesting -->
