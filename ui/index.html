@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Crypto Strategy Backtester</title>
+<title>JumpAlpha — Crypto Backtester</title>
 <style>
 /* ================================================================
    RESET & BASE
@@ -54,6 +54,31 @@ body {
   padding: 40px 0 32px;
 }
 
+.header-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+
+.header-logo:hover { opacity: 0.8; }
+
+.header-logo .logo-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, var(--accent), var(--cyan));
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -1px;
+}
+
 .header h1 {
   font-size: 2rem;
   font-weight: 700;
@@ -61,12 +86,13 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  margin-bottom: 8px;
+  margin-bottom: 0;
 }
 
 .header p {
   color: var(--text-dim);
   font-size: 0.95rem;
+  margin-top: 8px;
 }
 
 /* ================================================================
@@ -137,33 +163,96 @@ body {
   letter-spacing: 0.05em;
 }
 
-.coin-chips {
+.coin-search-wrap {
+  position: relative;
+}
+
+.coin-search-input {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: border-color 0.2s;
+}
+
+.coin-search-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.coin-search-input::placeholder { color: #475569; }
+
+.coin-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 240px;
+  overflow-y: auto;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  z-index: 100;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+
+.coin-dropdown.open { display: block; }
+
+.coin-option {
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.1s;
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
 }
 
-.coin-chip {
-  padding: 6px 14px;
+.coin-option:hover, .coin-option.highlighted {
   background: var(--bg-input);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s;
-  user-select: none;
 }
 
-.coin-chip:hover {
-  border-color: var(--accent);
+.coin-option .check {
+  color: var(--accent);
+  font-size: 0.9rem;
+  width: 18px;
 }
 
-.coin-chip.active {
+.selected-coins {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.selected-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
   background: var(--accent);
-  border-color: var(--accent);
+  border-radius: 14px;
+  font-size: 0.75rem;
+  font-weight: 600;
   color: #fff;
+  cursor: default;
 }
+
+.selected-tag .remove {
+  cursor: pointer;
+  opacity: 0.7;
+  font-size: 0.85rem;
+  margin-left: 2px;
+}
+
+.selected-tag .remove:hover { opacity: 1; }
 
 .period-chips {
   display: flex;
@@ -848,6 +937,7 @@ body {
    ================================================================ */
 @media (max-width: 700px) {
   .header h1 { font-size: 1.4rem; }
+  .header-logo .logo-icon { width: 32px; height: 32px; font-size: 1rem; }
   .config-row { flex-direction: column; }
   .metrics-grid { grid-template-columns: repeat(2, 1fr); }
   .examples-list { min-width: auto; }
@@ -859,8 +949,11 @@ body {
 
   <!-- Header -->
   <header class="header">
-    <h1>Crypto Strategy Backtester</h1>
-    <p>Select a strategy, pick your coins, and backtest instantly</p>
+    <a class="header-logo" onclick="location.reload()" title="Refresh">
+      <div class="logo-icon">JA</div>
+      <h1>JumpAlpha</h1>
+    </a>
+    <p>Crypto Strategy Backtester</p>
   </header>
 
   <!-- Input Panel -->
@@ -923,9 +1016,13 @@ body {
     <div class="config-row">
       <div class="config-group" style="flex:2; min-width:280px;">
         <label>Select Coins</label>
-        <div class="coin-chips" id="coinChips">
-          <!-- Filled dynamically -->
+        <div class="coin-search-wrap">
+          <input class="coin-search-input" id="coinSearchInput" type="text"
+                 placeholder="Type to search coins... (e.g. BTC, ETH, SOL)"
+                 autocomplete="off">
+          <div class="coin-dropdown" id="coinDropdown"></div>
         </div>
+        <div class="selected-coins" id="selectedCoinsDisplay"></div>
       </div>
       <div class="config-group" style="flex:0.7; min-width:150px;">
         <label>Test Period</label>
@@ -1114,29 +1211,62 @@ async function loadCoins() {
     availableCoins = FALLBACK_COINS;
   }
 
-  const container = document.getElementById('coinChips');
-  container.innerHTML = '';
+  const input = document.getElementById('coinSearchInput');
+  const dropdown = document.getElementById('coinDropdown');
+  let highlightIdx = -1;
 
-  // "All" chip
-  const allChip = document.createElement('div');
-  allChip.className = 'coin-chip';
-  allChip.textContent = 'ALL';
-  allChip.onclick = () => toggleAll(allChip);
-  container.appendChild(allChip);
+  function renderDropdown(query) {
+    const q = query.toUpperCase().trim();
+    const matches = q
+      ? availableCoins.filter(s => s.includes(q))
+      : availableCoins.slice(0, 15);
+    dropdown.innerHTML = '';
+    highlightIdx = -1;
+    if (matches.length === 0) {
+      dropdown.innerHTML = '<div class="coin-option" style="color:var(--text-dim);cursor:default">No matches</div>';
+      dropdown.classList.add('open');
+      return;
+    }
+    matches.forEach((sym, i) => {
+      const opt = document.createElement('div');
+      opt.className = 'coin-option';
+      const check = selectedCoins.has(sym) ? '✓' : '';
+      opt.innerHTML = `<span class="check">${check}</span>${sym}`;
+      opt.onclick = (e) => { e.stopPropagation(); toggleCoinSearch(sym); input.value = ''; renderDropdown(''); input.focus(); };
+      dropdown.appendChild(opt);
+    });
+    dropdown.classList.add('open');
+  }
 
-  availableCoins.forEach(sym => {
-    const chip = document.createElement('div');
-    chip.className = 'coin-chip';
-    chip.textContent = sym;
-    chip.dataset.symbol = sym;
-    chip.onclick = () => toggleCoin(chip, sym);
-    container.appendChild(chip);
+  input.addEventListener('focus', () => renderDropdown(input.value));
+  input.addEventListener('input', () => renderDropdown(input.value));
+
+  input.addEventListener('keydown', (e) => {
+    const items = dropdown.querySelectorAll('.coin-option:not([style*="cursor:default"])');
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      highlightIdx = Math.min(highlightIdx + 1, items.length - 1);
+      items.forEach((el, i) => el.classList.toggle('highlighted', i === highlightIdx));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      highlightIdx = Math.max(highlightIdx - 1, 0);
+      items.forEach((el, i) => el.classList.toggle('highlighted', i === highlightIdx));
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (highlightIdx >= 0 && items[highlightIdx]) items[highlightIdx].click();
+    } else if (e.key === 'Escape') {
+      dropdown.classList.remove('open');
+      input.blur();
+    }
   });
 
-  // Auto-select BTC if available
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.coin-search-wrap')) dropdown.classList.remove('open');
+  });
+
+  // Auto-select BTC
   if (availableCoins.includes('BTC')) {
-    const btcChip = container.querySelector('[data-symbol="BTC"]');
-    if (btcChip) toggleCoin(btcChip, 'BTC');
+    toggleCoinSearch('BTC');
   }
 }
 
@@ -1169,33 +1299,29 @@ async function loadExamples() {
 // ================================================================
 // COIN SELECTION
 // ================================================================
-function toggleCoin(chip, sym) {
+function toggleCoinSearch(sym) {
   if (selectedCoins.has(sym)) {
     selectedCoins.delete(sym);
-    chip.classList.remove('active');
   } else {
     selectedCoins.add(sym);
-    chip.classList.add('active');
   }
-  // Deactivate ALL chip
-  const allChip = document.querySelector('.coin-chip:not([data-symbol])');
-  if (allChip) allChip.classList.remove('active');
+  renderSelectedCoins();
 }
 
-function toggleAll(allChip) {
-  const allActive = allChip.classList.contains('active');
-  const chips = document.querySelectorAll('.coin-chip[data-symbol]');
+function removeCoin(sym) {
+  selectedCoins.delete(sym);
+  renderSelectedCoins();
+}
 
-  if (allActive) {
-    selectedCoins.clear();
-    chips.forEach(c => c.classList.remove('active'));
-    allChip.classList.remove('active');
-  } else {
-    selectedCoins.clear();
-    availableCoins.forEach(s => selectedCoins.add(s));
-    chips.forEach(c => c.classList.add('active'));
-    allChip.classList.add('active');
-  }
+function renderSelectedCoins() {
+  const container = document.getElementById('selectedCoinsDisplay');
+  container.innerHTML = '';
+  selectedCoins.forEach(sym => {
+    const tag = document.createElement('span');
+    tag.className = 'selected-tag';
+    tag.innerHTML = `${sym}<span class="remove" onclick="removeCoin('${sym}')">&times;</span>`;
+    container.appendChild(tag);
+  });
 }
 
 // ================================================================
