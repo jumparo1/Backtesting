@@ -1024,6 +1024,7 @@ body {
       <label>Select</label>
       <select class="strategy-select" id="strategySelect" onchange="loadStrategy(this.value)">
         <option value="crt_cisd">📊 CRT + CISD (Candle Range Theory)</option>
+        <option value="spike_reversal">⚡ Spike Exhaustion Reversal (Fade Parabolic Moves)</option>
         <option value="">✍️ Custom — write your own</option>
       </select>
     </div>
@@ -1218,6 +1219,15 @@ SHORT: When C2 sweeps above C1 high (liquidity grab), enter short on return belo
 LONG: When C2 sweeps below C1 low (liquidity grab), enter long on return above C1 low (CISD level).
 Stop loss at C2 extreme (tight). Take profit at 2.5x risk (2.5R).
 Multi-timeframe: Use 1D CRT for direction, 1H CRT+CISD for entry confirmation.`
+  },
+  spike_reversal: {
+    name: "Spike Exhaustion Reversal (Fade Parabolic Moves)",
+    description: `Spike Exhaustion Reversal strategy:
+Fade parabolic spikes — enter long after capitulation drops, exit on blow-off tops.
+LONG: Price drops >15% in 5 candles + hammer candle (lower wick > 1.5x body) + RSI < 30 + volume > 2x average.
+EXIT: Price gains >15% in 5 candles + rejection wick (upper wick > 1.5x body) + RSI > 70.
+SL at spike low. TP at 2R (2x risk).
+Mean-reversion edge: fading unsustainable moves back toward equilibrium.`
   }
 };
 

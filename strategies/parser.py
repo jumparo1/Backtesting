@@ -47,6 +47,7 @@ from strategies.rule_based import (
     VolumeAboveAvg,
 )
 from strategies.crt_cisd import CRTCISDStrategy
+from strategies.spike_reversal import SpikeReversalStrategy
 
 
 @dataclass
@@ -90,6 +91,43 @@ def _try_custom_strategy(text: str) -> ParseResult | None:
             strategy=strategy,
             success=True,
             message="CRT + CISD pattern strategy loaded.",
+            warnings=warnings,
+        )
+
+    # Spike Exhaustion Reversal detection
+    if re.search(r'\bspike\s*(?:exhaustion|reversal|fade)\b', text) or \
+       re.search(r'\bfade\s*(?:the\s+)?(?:spike|pump|dump)\b', text) or \
+       re.search(r'\bspike\s*(?:and|&)?\s*reversal\b', text) or \
+       re.search(r'\bexhaustion\s*reversal\b', text) or \
+       re.search(r'\bmean\s*reversion\s*(?:after|on)\s*spike\b', text) or \
+       re.search(r'\bparabolic\s*(?:reversal|fade|rejection)\b', text) or \
+       re.search(r'\bblow.?off\s*top\b', text) or \
+       re.search(r'\bclimax\s*(?:exhaustion|reversal)\b', text):
+
+        strategy = SpikeReversalStrategy()
+
+        # Extract spike threshold if specified (e.g. "20% spike", "spike 30%")
+        spike_match = re.search(r'(\d+(?:\.\d+)?)\s*%\s*(?:spike|move|pump|dump)', text)
+        if spike_match:
+            strategy.spike_pct = float(spike_match.group(1)) / 100
+
+        # Extract RR target
+        rr_match = re.search(r'(\d+(?:\.\d+)?)\s*[rR]\b', text)
+        if rr_match:
+            strategy.rr_target = float(rr_match.group(1))
+
+        warnings = [
+            "Using Spike Exhaustion Reversal strategy (mean-reversion after parabolic moves).",
+            "LONG only: enters on capitulation drops (hammer + oversold RSI + volume), exits on blow-off tops.",
+            f"Spike threshold: {strategy.spike_pct:.0%} move in {strategy.lookback} candles.",
+            f"Target: {strategy.rr_target}R (risk-to-reward).",
+            "Note: Daily candles — intraday spikes won't be captured.",
+        ]
+
+        return ParseResult(
+            strategy=strategy,
+            success=True,
+            message="Spike Exhaustion Reversal strategy loaded.",
             warnings=warnings,
         )
 
