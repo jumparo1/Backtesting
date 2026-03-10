@@ -1025,6 +1025,7 @@ body {
       <select class="strategy-select" id="strategySelect" onchange="loadStrategy(this.value)">
         <option value="crt_cisd">📊 CRT + CISD (Candle Range Theory)</option>
         <option value="spike_reversal">⚡ Spike Exhaustion Reversal (Fade Parabolic Moves)</option>
+        <option value="mr_long">🎯 MR Long — Journal Edge (Mean Reversion)</option>
         <option value="">✍️ Custom — write your own</option>
       </select>
     </div>
@@ -1228,6 +1229,17 @@ LONG: Price drops >15% in 5 candles + hammer candle (lower wick > 1.5x body) + R
 EXIT: Price gains >15% in 5 candles + rejection wick (upper wick > 1.5x body) + RSI > 70.
 SL at spike low. TP at 2R (2x risk).
 Mean-reversion edge: fading unsustainable moves back toward equilibrium.`
+  },
+  mr_long: {
+    name: "MR Long — Journal Edge (Mean Reversion Long)",
+    description: `MR Long (Journal Edge) strategy:
+Mean Reversion Long — buy support bounces at EMA pullbacks.
+ENTER LONG when: price dips to EMA 21 + RSI < 40 (oversold) + hammer candle (lower wick > 1.5x body) + closes green above EMA.
+EXIT when: RSI > 65 (overbought) OR price hits upper Bollinger Band.
+SL at candle low. TP at 2R.
+Journal-backed: 100% WR on 8 real MR Long trades.
+Win signals: retest, ema, reversion, bounce, rejection, support.
+Avoid: FOMO entries, chasing momentum longs without pullback.`
   }
 };
 
