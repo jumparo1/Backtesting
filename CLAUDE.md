@@ -24,6 +24,9 @@ Crypto strategy backtesting engine — describe strategies in plain English, tes
 - [ ] No automated tests
 
 ## Recent Changes
+- 2026-03-10: Repos made public (Backtesting + FundHQ), TradingJournal stays private
+- 2026-03-10: README.md rewritten with correct URLs, port, features, deploy info
+- 2026-03-10: Netlify redeployed with correct API_BASE pointing to Render
 - 2026-03-10: Backend deployed to Render free tier (`backtesting-api-6vb0.onrender.com`)
 - 2026-03-10: Frontend auto-detects Netlify vs local and routes API calls accordingly
 - 2026-02-27: Refreshed all coin data to today (87/108 fully current)
@@ -33,10 +36,11 @@ Crypto strategy backtesting engine — describe strategies in plain English, tes
 - 2026-02-27: Pushed all source + data to GitHub, added SKILL.md
 
 ## Next Steps
+- **Set ANTHROPIC_API_KEY env var on Render** (needed for AI features — screenshot analysis, NL translation)
 - Fix stale coin data (need alternative sources for non-Binance coins)
-- Set ANTHROPIC_API_KEY env var on Render (needed for AI features)
 - Add more strategies to dropdown
 - Add short-selling support to engine (bearish CRT currently only exits longs)
+- Consider Render Starter ($7/mo) if cold start bothers user
 
 ## How to Run
 ```bash
