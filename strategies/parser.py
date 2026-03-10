@@ -118,11 +118,11 @@ def _try_custom_strategy(text: str) -> ParseResult | None:
             strategy.rr_target = float(rr_match.group(1))
 
         warnings = [
-            "Using Spike Exhaustion Reversal strategy (mean-reversion after parabolic moves).",
-            "LONG only: enters on capitulation drops (hammer + oversold RSI + volume), exits on blow-off tops.",
+            "Using Spike Exhaustion Reversal strategy (scored 2-of-4 confirmation).",
+            "LONG only: enters on sharp drops + rejection candle + 2/4 confirmations (RSI, SRSI, momentum, volume).",
             f"Spike threshold: {strategy.spike_pct:.0%} move in {strategy.lookback} candles.",
+            f"Confirmations needed: {strategy.min_confirms} of 4 layers.",
             f"Target: {strategy.rr_target}R (risk-to-reward).",
-            "Note: Daily candles — intraday spikes won't be captured.",
         ]
 
         return ParseResult(
