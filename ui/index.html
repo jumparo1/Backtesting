@@ -1032,8 +1032,10 @@ const FALLBACK_EXAMPLES = [
   "buy when RSI below 25 and price below EMA 200, sell when RSI above 75"
 ];
 let availableCoins = [];
-// Backend API base URL — set to hosted backend when available, empty for local
-const API_BASE = '';
+// Backend API base URL — auto-detect: use Render when on Netlify, empty for local dev
+const API_BASE = window.location.hostname.includes('netlify.app')
+  ? 'https://backtesting-api.onrender.com'
+  : '';
 
 let selectedCoins = new Set();
 let selectedPeriodDays = 1825; // default 5Y
