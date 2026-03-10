@@ -48,6 +48,7 @@ from strategies.rule_based import (
 )
 from strategies.crt_cisd import CRTCISDStrategy
 from strategies.spike_reversal import SpikeReversalStrategy
+from strategies.mr_long import MRLongStrategy
 
 
 @dataclass
@@ -128,6 +129,46 @@ def _try_custom_strategy(text: str) -> ParseResult | None:
             strategy=strategy,
             success=True,
             message="Spike Exhaustion Reversal strategy loaded.",
+            warnings=warnings,
+        )
+
+    # Mean Reversion Long detection (journal-backed)
+    if re.search(r'\bmr\s*long\b', text) or \
+       re.search(r'\bmean\s*reversion\s*long\b', text) or \
+       re.search(r'\bsupport\s*bounce\b', text) or \
+       re.search(r'\bema\s*(?:pullback|bounce|reversion|retest)\b', text) or \
+       re.search(r'\bbuy\s*(?:the\s+)?(?:dip|bounce|support)\b', text) or \
+       re.search(r'\bjournal\s*(?:edge|strategy)\b', text) or \
+       re.search(r'\bdemand\s*zone\s*(?:bounce|entry|long)\b', text):
+
+        strategy = MRLongStrategy()
+
+        # Extract RR target
+        rr_match = re.search(r'(\d+(?:\.\d+)?)\s*[rR]\b', text)
+        if rr_match:
+            strategy.rr_target = float(rr_match.group(1))
+
+        rr_match2 = re.search(r'rr\s*[:=]?\s*(\d+(?:\.\d+)?)', text)
+        if rr_match2:
+            strategy.rr_target = float(rr_match2.group(1))
+
+        # Extract EMA period if specified
+        ema_match = re.search(r'ema\s*(\d+)', text)
+        if ema_match:
+            strategy.ema_period = int(ema_match.group(1))
+
+        warnings = [
+            "Using MR Long strategy (journal-backed mean reversion).",
+            "LONG only: enters on EMA pullback + oversold RSI + hammer candle.",
+            f"EMA period: {strategy.ema_period} | RSI entry < {strategy.rsi_entry} | RSI exit > {strategy.rsi_exit}.",
+            f"Target: {strategy.rr_target}R (risk-to-reward).",
+            "Journal edge: MR Long = 100% WR (8W/0L) from real trades.",
+        ]
+
+        return ParseResult(
+            strategy=strategy,
+            success=True,
+            message="MR Long (Journal Edge) strategy loaded.",
             warnings=warnings,
         )
 
