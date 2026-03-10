@@ -19,11 +19,13 @@ Crypto strategy backtesting engine — describe strategies in plain English, tes
 - [x] Strategy dropdown menu (first strategy: CRT + CISD)
 - [x] CRT + CISD strategy documented in SKILL.md
 - [x] CRT + CISD implemented in engine (`strategies/crt_cisd.py`) — body-inside-body, candle color, min sweep depth
-- [ ] Backend not hosted yet (runs locally only)
+- [x] Backend hosted on Render (free tier): `https://backtesting-api-6vb0.onrender.com`
 - [ ] 12 top-100 coins stale (CRO, KAS, LEO, OKB, KCS, MKR, MNT, FTM, HNT, EOS, XMR, OCEAN — not on Binance)
 - [ ] No automated tests
 
 ## Recent Changes
+- 2026-03-10: Backend deployed to Render free tier (`backtesting-api-6vb0.onrender.com`)
+- 2026-03-10: Frontend auto-detects Netlify vs local and routes API calls accordingly
 - 2026-02-27: Refreshed all coin data to today (87/108 fully current)
 - 2026-02-27: Added fallback coin list for Netlify (coins show without backend)
 - 2026-02-27: Added strategy dropdown with CRT + CISD as first template
@@ -32,7 +34,7 @@ Crypto strategy backtesting engine — describe strategies in plain English, tes
 
 ## Next Steps
 - Fix stale coin data (need alternative sources for non-Binance coins)
-- Host backend (Render prepared but paused)
+- Set ANTHROPIC_API_KEY env var on Render (needed for AI features)
 - Add more strategies to dropdown
 - Add short-selling support to engine (bearish CRT currently only exits longs)
 
