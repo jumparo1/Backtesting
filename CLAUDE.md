@@ -20,10 +20,16 @@ Crypto strategy backtesting engine — describe strategies in plain English, tes
 - [x] CRT + CISD strategy documented in SKILL.md
 - [x] CRT + CISD implemented in engine (`strategies/crt_cisd.py`) — body-inside-body, candle color, min sweep depth
 - [x] Backend hosted on Render (free tier): `https://backtesting-api-6vb0.onrender.com`
+- [x] JumpAlpha branding with logo header
+- [x] Coin search bar with dropdown (replaced chip wall)
+- [x] Strategy improvement suggestions panel after backtest results
 - [ ] 12 top-100 coins stale (CRO, KAS, LEO, OKB, KCS, MKR, MNT, FTM, HNT, EOS, XMR, OCEAN — not on Binance)
 - [ ] No automated tests
 
 ## Recent Changes
+- 2026-03-10: Added strategy improvement suggestions panel (contextual tips after backtest)
+- 2026-03-10: Rebranded UI to JumpAlpha with logo header (click to refresh)
+- 2026-03-10: Replaced coin chip wall with search bar + dropdown selector
 - 2026-03-10: Repos made public (Backtesting + FundHQ), TradingJournal stays private
 - 2026-03-10: README.md rewritten with correct URLs, port, features, deploy info
 - 2026-03-10: Netlify redeployed with correct API_BASE pointing to Render
