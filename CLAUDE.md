@@ -23,10 +23,12 @@ Crypto strategy backtesting engine — describe strategies in plain English, tes
 - [x] JumpAlpha branding with logo header
 - [x] Coin search bar with dropdown (replaced chip wall)
 - [x] Strategy improvement suggestions panel after backtest results
+- [x] MR Long (Journal Edge) strategy — reverse-engineered from trading journal (100% WR on 8 trades)
 - [ ] 12 top-100 coins stale (CRO, KAS, LEO, OKB, KCS, MKR, MNT, FTM, HNT, EOS, XMR, OCEAN — not on Binance)
 - [ ] No automated tests
 
 ## Recent Changes
+- 2026-03-10: Added MR Long (Journal Edge) strategy from trading journal pattern mining (EMA pullback + RSI + hammer)
 - 2026-03-10: Added strategy improvement suggestions panel (contextual tips after backtest)
 - 2026-03-10: Rebranded UI to JumpAlpha with logo header (click to refresh)
 - 2026-03-10: Replaced coin chip wall with search bar + dropdown selector
@@ -44,7 +46,7 @@ Crypto strategy backtesting engine — describe strategies in plain English, tes
 ## Next Steps
 - **Set ANTHROPIC_API_KEY env var on Render** (needed for AI features — screenshot analysis, NL translation)
 - Fix stale coin data (need alternative sources for non-Binance coins)
-- Add more strategies to dropdown
+- Add Momo Short strategy from journal (100% WR on 7 trades — momentum breakdown shorts)
 - Add short-selling support to engine (bearish CRT currently only exits longs)
 - Consider Render Starter ($7/mo) if cold start bothers user
 
