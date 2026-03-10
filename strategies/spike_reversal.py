@@ -67,7 +67,7 @@ class SpikeReversalStrategy(Strategy):
             ),
         )
         # Tuneable parameters — calibrated for daily candles
-        self.spike_pct: float = 0.05       # 5% move = spike (was 15%, too strict)
+        self.spike_pct: float = 0.03       # 3% move = spike (~99 events/year on BTC)
         self.lookback: int = 5             # measure spike over N candles
         self.wick_ratio: float = 1.5       # wick must be 1.5x body for "strong" signal
         self.rsi_ob: int = 65              # overbought (relaxed from 70)
